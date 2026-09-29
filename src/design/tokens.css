@@ -1,0 +1,67 @@
+/* ─── Design Tokens ─────────────────────────────────────── */
+
+:root {
+  /* Palette – Light */
+  --bg:           #FAF7F2;
+  --surface:      #FFFFFF;
+  --surface-2:    #F4EFE8;
+  --ink:          #1F1B18;
+  --ink-muted:    #7A7068;
+  --line:         #E8E1D8;
+  --accent:       #B76E79;
+  --accent-soft:  #F3E3E2;
+  --accent-ink:   #FFFFFF;
+  --shadow:       0 8px 30px rgba(31, 27, 24, 0.08);
+  --glass:        rgba(255, 255, 255, 0.65);
+
+  /* Radius */
+  --r-xs:  10px;
+  --r-sm:  16px;
+  --r-md:  24px;
+  --r-full: 999px;
+
+  /* Spacing (4px base) */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* Transitions */
+  --dur-fast:   150ms;
+  --dur-base:   300ms;
+  --dur-slow:   600ms;
+  --ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Sidebar width */
+  --sidebar-w: 260px;
+}
+
+[data-theme="dark"] {
+  /* Palette – Dark (cinematic warm black, not an inversion) */
+  --bg:           #0E0C0D;
+  --surface:      #171415;
+  --surface-2:    #211D1F;
+  --ink:          #F3EDE8;
+  --ink-muted:    #A39A94;
+  --line:         #2B2628;
+  --accent:       #D9A5A0;
+  --accent-soft:  #2A1E20;
+  --accent-ink:   #1A1214;
+  --shadow:       0 10px 40px rgba(0, 0, 0, 0.5);
+  --glass:        rgba(30, 25, 27, 0.6);
+}
+
+/* ─── Respect reduced motion ──────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
