@@ -1,14 +1,20 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X, Calendar, Sparkles, MapPin, Lock, CheckCircle2,
-  Clock, Plus, ArrowRight, Heart
+  Clock, Plus, ArrowRight, Heart, Check
 } from 'lucide-react'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import EmptyState from '../ui/EmptyState'
+import SignedImage from '../story/SignedImage'
+import PhotoViewer from '../memory/PhotoViewer'
+import AddBucketItemModal, { categoryIcon } from './AddBucketItemModal'
+import CreateMemoryWizard from '../memory/CreateMemoryWizard'
 import { getSignedPhotoUrl } from '../../hooks/useMemories'
+import { useSpace } from '../../hooks/useSpace'
 import { parseYMD, getTodayYMD } from '../../lib/milestones'
+import { uploaderLabel } from '../../lib/people'
 
 function MemoryThumb({ memory }) {
   const [photoUrl, setPhotoUrl] = useState(null)
@@ -69,6 +75,11 @@ export default function DayDetailPanel({
   plans = [],
   capsules = [],
   onThisDayMemories = [],
+  bucketItems = [],
+  onAddBucketItem,
+  onToggleBucketDone,
+  onConvertBucketItem,
+  onMemoryCreated,
   onClose,
   onAddMemory,
   onAddPlan,
@@ -77,6 +88,40 @@ export default function DayDetailPanel({
   const todayStr = getTodayYMD()
   const isPastOrToday = date <= todayStr
   const isFuture = date > todayStr
+
+  const { member, partner } = useSpace()
+  const [personFilter, setPersonFilter] = useState('both')
+  const [viewerIndex, setViewerIndex] = useState(null)
+  const [addBucketOpen, setAddBucketOpen] = useState(false)
+  const [justCompletedId, setJustCompletedId] = useState(null)
+  const [convertWizard, setConvertWizard] = useState(null) // { itemId, title, place }
+
+  const handleToggleBucketDone = (item) => {
+    const next = !item.is_done
+    onToggleBucketDone?.(item.id, next)
+    setJustCompletedId(next ? item.id : null)
+  }
+
+  const handleTurnIntoMemory = (item) => {
+    setJustCompletedId(null)
+    setConvertWizard({ itemId: item.id, title: item.title, place: item.place_name })
+  }
+
+  const dayPhotos = useMemo(() => {
+    const list = []
+    for (const mem of memories) {
+      for (const p of mem.photos || []) {
+        list.push({ ...p, memoryTitle: mem.title, uploaderName: uploaderLabel(p.uploaded_by, member, partner) })
+      }
+    }
+    return list
+  }, [memories, member, partner])
+
+  const filteredDayPhotos = useMemo(() => {
+    if (personFilter === 'me') return dayPhotos.filter((p) => p.uploaded_by === member?.user_id)
+    if (personFilter === 'partner') return dayPhotos.filter((p) => p.uploaded_by === partner?.user_id)
+    return dayPhotos
+  }, [dayPhotos, personFilter, member, partner])
 
   const content = (
     <div className="space-y-6">
@@ -156,6 +201,150 @@ export default function DayDetailPanel({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Bucket list */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-widest text-ink-muted">
+            Bucket list{bucketItems.length > 0 ? ` (${bucketItems.length})` : ''}
+          </p>
+          <button
+            onClick={() => setAddBucketOpen(true)}
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:opacity-80 transition-opacity"
+          >
+            <Plus size={12} />+ Add to bucket list
+          </button>
+        </div>
+
+        {bucketItems.length === 0 ? (
+          isFuture ? (
+            <p className="text-xs text-ink-muted italic">Some adventures haven't happened yet.</p>
+          ) : null
+        ) : (
+          <div className="space-y-2">
+            {bucketItems.map((item) => {
+              const Icon = categoryIcon(item.category)
+              return (
+                <div key={item.id}>
+                  <div
+                    className={`flex items-center gap-3 p-3 rounded-[var(--r-xs)] border ${
+                      item.is_done ? 'border-line bg-surface-2' : 'border-line bg-surface'
+                    }`}
+                  >
+                    <button
+                      onClick={() => handleToggleBucketDone(item)}
+                      aria-label={item.is_done ? 'Mark as not done' : 'Mark as done'}
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors ${
+                        item.is_done ? 'bg-accent border-accent text-accent-ink' : 'border-line text-transparent hover:border-accent'
+                      }`}
+                    >
+                      <motion.span
+                        initial={false}
+                        animate={{ scale: item.is_done ? 1 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex items-center justify-center"
+                      >
+                        <Check size={12} strokeWidth={3} />
+                      </motion.span>
+                    </button>
+                    <Icon size={13} className="text-accent flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`text-xs font-medium truncate ${
+                          item.is_done ? 'text-ink-muted line-through' : 'text-ink'
+                        }`}
+                      >
+                        {item.title}
+                      </p>
+                      {item.place_name && (
+                        <p className="text-[11px] text-ink-muted truncate">{item.place_name}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <AnimatePresence>
+                    {justCompletedId === item.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-2 p-3 rounded-[var(--r-xs)] border border-accent/25 bg-accent-soft flex items-center justify-between gap-2 flex-wrap">
+                          <p className="text-xs text-ink font-medium">Turn this into a Memory?</p>
+                          <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => setJustCompletedId(null)}>
+                              Not now
+                            </Button>
+                            <Button variant="primary" size="sm" onClick={() => handleTurnIntoMemory(item)}>
+                              Turn into Memory
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Day photos */}
+      {dayPhotos.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-widest text-ink-muted">
+              Day photos ({dayPhotos.length})
+            </p>
+            {partner && (
+              <div className="flex items-center gap-1 rounded-full border border-line p-0.5">
+                {[
+                  { id: 'both', label: 'Both' },
+                  { id: 'me', label: 'Me' },
+                  { id: 'partner', label: partner.display_name || 'Partner' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setPersonFilter(opt.id)}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors ${
+                      personFilter === opt.id ? 'bg-accent-soft text-accent' : 'text-ink-muted hover:text-ink'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {filteredDayPhotos.length === 0 ? (
+            <p className="text-xs text-ink-muted italic">
+              {personFilter === 'partner'
+                ? `${partner?.display_name || 'Your partner'} hasn't added photos for this day yet.`
+                : 'No photos for this filter.'}
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {filteredDayPhotos.map((p, i) => (
+                <button
+                  key={p.id}
+                  onClick={() => setViewerIndex(i)}
+                  className="relative w-16 h-16 rounded-[var(--r-xs)] overflow-hidden bg-surface-2 border border-line flex-shrink-0"
+                >
+                  <SignedImage path={p.path} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                  {p.uploaderName && (
+                    <span className="absolute bottom-0.5 left-0.5 right-0.5 text-[8px] leading-tight text-white bg-black/50 rounded px-1 py-0.5 truncate">
+                      {p.uploaderName === 'you' ? 'You' : p.uploaderName}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -303,39 +492,76 @@ export default function DayDetailPanel({
     </div>
   )
 
+  const viewer = viewerIndex !== null && (
+    <PhotoViewer photos={filteredDayPhotos} initialIndex={viewerIndex} onClose={() => setViewerIndex(null)} />
+  )
+
+  const overlays = (
+    <>
+      <AddBucketItemModal
+        open={addBucketOpen}
+        date={date}
+        onClose={() => setAddBucketOpen(false)}
+        onAdd={(item) => onAddBucketItem?.(item)}
+      />
+      <CreateMemoryWizard
+        open={!!convertWizard}
+        initialDate={date}
+        initialTitle={convertWizard?.title}
+        initialPlace={convertWizard?.place}
+        onClose={() => setConvertWizard(null)}
+        onSuccess={async (createdMemory) => {
+          if (convertWizard) {
+            await onConvertBucketItem?.(convertWizard.itemId, createdMemory?.id)
+          }
+          setConvertWizard(null)
+          onMemoryCreated?.()
+        }}
+      />
+    </>
+  )
+
   if (isMobile) {
     return (
-      <AnimatePresence>
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={onClose}
-          />
-          {/* Sheet */}
-          <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-t-[var(--r-lg)] border-t border-line backdrop-blur-2xl p-6 shadow-2xl z-10"
-            style={{ background: 'var(--glass)' }}
-          >
-            {/* Drag handle */}
-            <div className="w-10 h-1 rounded-full bg-ink-muted/30 mx-auto mb-5" />
-            {content}
-          </motion.div>
-        </div>
-      </AnimatePresence>
+      <>
+        <AnimatePresence>
+          <div className="fixed inset-0 z-50 flex items-end justify-center">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={onClose}
+            />
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-t-[var(--r-lg)] border-t border-line backdrop-blur-2xl p-6 shadow-2xl z-10"
+              style={{ background: 'var(--glass)' }}
+            >
+              {/* Drag handle */}
+              <div className="w-10 h-1 rounded-full bg-ink-muted/30 mx-auto mb-5" />
+              {content}
+            </motion.div>
+          </div>
+        </AnimatePresence>
+        {viewer}
+        {overlays}
+      </>
     )
   }
 
   return (
-    <Card glass className="p-6">
-      {content}
-    </Card>
+    <>
+      <Card glass className="p-6">
+        {content}
+      </Card>
+      {viewer}
+      {overlays}
+    </>
   )
 }

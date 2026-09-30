@@ -231,18 +231,20 @@ export default function AppShell({ children }) {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title="Create a Memory"
+        footer={
+          <Button
+            variant="secondary"
+            size="md"
+            className="w-full"
+            onClick={() => setCreateOpen(false)}
+          >
+            Close
+          </Button>
+        }
       >
-        <p className="text-ink-muted text-sm leading-relaxed mb-6">
+        <p className="text-ink-muted text-sm leading-relaxed">
           Memory creation is coming in the next chapter. Stay tuned.
         </p>
-        <Button
-          variant="secondary"
-          size="md"
-          className="w-full"
-          onClick={() => setCreateOpen(false)}
-        >
-          Close
-        </Button>
       </Modal>
     </div>
   )

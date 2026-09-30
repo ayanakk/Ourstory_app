@@ -87,6 +87,15 @@ export default function MemoryCalendar({
     return map
   }, [plans])
 
+  // Bucket list ring: hollow while any item is unfinished, filled once all are done
+  const bucketStatusByDate = useMemo(() => {
+    const map = new Map()
+    for (const [d, items] of plansByDate.entries()) {
+      map.set(d, items.every((it) => it.is_done))
+    }
+    return map
+  }, [plansByDate])
+
   const capsulesByDate = useMemo(() => {
     const map = new Map()
     for (const c of capsules) {
@@ -302,9 +311,12 @@ export default function MemoryCalendar({
                 })
               }
               if (hasPlan) {
+                const allDone = bucketStatusByDate.get(dateStr)
                 markerItems.push({
                   key: 'plan',
-                  node: (
+                  node: allDone ? (
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                  ) : (
                     <span className="w-1.5 h-1.5 rounded-full border border-accent bg-transparent" />
                   ),
                 })
@@ -381,7 +393,7 @@ export default function MemoryCalendar({
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full border border-accent bg-transparent" />
-          <span>Planned</span>
+          <span>Bucket list</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Lock size={10} className="text-accent" />

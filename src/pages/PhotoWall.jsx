@@ -8,8 +8,10 @@ import Button from '../components/ui/Button'
 import PhotoTile from '../components/photos/PhotoTile'
 import PhotoViewer from '../components/memory/PhotoViewer'
 import { usePhotos } from '../hooks/usePhotos'
+import { useSpace } from '../hooks/useSpace'
 import { getSignedUrls } from '../lib/photos'
 import { parseYMD } from '../lib/milestones'
+import { uploaderLabel } from '../lib/people'
 
 const BATCH_SIZE = 40
 
@@ -99,19 +101,27 @@ function formatLongDate(dateStr) {
 
 export default function PhotoWall() {
   const { photos, loading, toggleFavorite } = usePhotos()
+  const { member, partner } = useSpace()
   const [filter, setFilter] = useState('all')
+  const [personFilter, setPersonFilter] = useState('both')
   const [visibleCount, setVisibleCount] = useState(BATCH_SIZE)
   const [viewerId, setViewerId] = useState(null)
   const warmedCount = useRef(0)
   const sentinelRef = useRef(null)
 
-  const sections = useMemo(() => buildSections(photos, filter), [photos, filter])
+  const personFiltered = useMemo(() => {
+    if (personFilter === 'me') return photos.filter((p) => p.uploaded_by === member?.user_id)
+    if (personFilter === 'partner') return photos.filter((p) => p.uploaded_by === partner?.user_id)
+    return photos
+  }, [photos, personFilter, member, partner])
+
+  const sections = useMemo(() => buildSections(personFiltered, filter), [personFiltered, filter])
   const flatOrder = useMemo(() => sections.flatMap((s) => s.items), [sections])
 
   useEffect(() => {
     setVisibleCount(BATCH_SIZE)
     warmedCount.current = 0
-  }, [filter])
+  }, [filter, personFilter])
 
   const visibleIds = useMemo(() => {
     return new Set(flatOrder.slice(0, visibleCount).map((p) => p.id))
@@ -194,6 +204,28 @@ export default function PhotoWall() {
         ))}
       </div>
 
+      {partner && (
+        <div className="flex items-center gap-2 mb-6">
+          {[
+            { id: 'both', label: 'Both' },
+            { id: 'me', label: 'Me' },
+            { id: 'partner', label: partner.display_name || 'Partner' },
+          ].map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => setPersonFilter(opt.id)}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-colors ${
+                personFilter === opt.id
+                  ? 'bg-accent-soft text-accent border-accent/30'
+                  : 'bg-surface text-ink-muted border-line hover:bg-surface-2'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {loading ? (
         <div className="columns-2 sm:columns-3 lg:columns-4 gap-3">
           {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
@@ -272,6 +304,14 @@ export default function PhotoWall() {
                   ) : (
                     <p className="text-white/70 text-xs">Not linked to a memory</p>
                   )}
+                  {(() => {
+                    const name = uploaderLabel(photo.uploaded_by, member, partner)
+                    return name ? (
+                      <p className="text-white/60 text-[11px] mt-0.5">
+                        Added by {name === 'you' ? 'you' : name}
+                      </p>
+                    ) : null
+                  })()}
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   <motion.button

@@ -113,6 +113,12 @@ export default function PhotoViewer({ photos = [], initialIndex = 0, onClose, re
           </div>
         )}
 
+        {!renderOverlay && current.uploaderName && (
+          <div className="absolute bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] text-white/80 bg-white/10 backdrop-blur-md">
+            Added by {current.uploaderName}
+          </div>
+        )}
+
         {photos.length > 1 && (
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full text-xs font-medium text-white/90 bg-white/10 backdrop-blur-md">
             {index + 1} / {photos.length}

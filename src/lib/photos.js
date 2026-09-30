@@ -1,3 +1,4 @@
+import imageCompression from 'browser-image-compression'
 import { supabase } from './supabase'
 
 const signedUrlCache = new Map()
@@ -95,4 +96,30 @@ export async function deletePhotoFiles(paths) {
   if (!paths?.length) return
   const { error } = await supabase.storage.from('photos').remove(paths)
   if (error) console.error('Failed to delete photo files:', error)
+}
+
+/** Compresses an image file client-side before upload; falls back to the original on failure. */
+export async function compressImage(file) {
+  try {
+    return await imageCompression(file, {
+      maxSizeMB: 1.5,
+      maxWidthOrHeight: 2000,
+      useWebWorker: true,
+      fileType: 'image/jpeg',
+    })
+  } catch (err) {
+    console.warn('Image compression failed, using original file:', err)
+    return file
+  }
+}
+
+/** Uploads a photo file to the private bucket at {spaceId}/{memoryId}/{uuid}.jpg */
+export async function uploadPhoto(spaceId, memoryId, file) {
+  const filename = `${spaceId}/${memoryId}/${crypto.randomUUID()}.jpg`
+  const { error } = await supabase.storage.from('photos').upload(filename, file, {
+    contentType: file.type || 'image/jpeg',
+    upsert: false,
+  })
+  if (error) return { path: null, error }
+  return { path: filename, error: null }
 }

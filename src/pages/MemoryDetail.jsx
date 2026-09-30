@@ -10,7 +10,9 @@ import SignedImage from '../components/story/SignedImage'
 import PhotoViewer from '../components/memory/PhotoViewer'
 import { useMemories } from '../hooks/useMemories'
 import { useAuth } from '../hooks/useAuth'
+import { useSpace } from '../hooks/useSpace'
 import { parseYMD } from '../lib/milestones'
+import { uploaderLabel } from '../lib/people'
 import { MOODS } from '../components/memory/CreateMemoryWizard'
 
 const MOOD_MAP = Object.fromEntries(MOODS.map((m) => [m.id, m]))
@@ -26,6 +28,7 @@ export default function MemoryDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { member, partner } = useSpace()
   const { getMemoryById, toggleFavorite, deleteMemory } = useMemories()
 
   const [memory, setMemory] = useState(null)
@@ -96,9 +99,11 @@ export default function MemoryDetail() {
     )
   }
 
-  const cover = memory.photos?.find((p) => p.id === memory.cover_photo_id)?.path || memory.photos?.[0]?.path || null
+  const coverPhoto = memory.photos?.find((p) => p.id === memory.cover_photo_id) || memory.photos?.[0] || null
+  const cover = coverPhoto?.path || null
   const otherPhotos = (memory.photos || []).filter((p) => p.path !== cover)
-  const allPhotos = cover ? [{ id: 'cover', path: cover }, ...otherPhotos] : otherPhotos
+  const rawAllPhotos = coverPhoto ? [coverPhoto, ...otherPhotos] : otherPhotos
+  const allPhotos = rawAllPhotos.map((p) => ({ ...p, uploaderName: uploaderLabel(p.uploaded_by, member, partner) }))
   const mood = memory.mood ? MOOD_MAP[memory.mood] : null
   const isAuthor = user?.id === memory.author_id
 
@@ -199,24 +204,30 @@ export default function MemoryDetail() {
         <PhotoViewer photos={allPhotos} initialIndex={viewerIndex} onClose={() => setViewerIndex(null)} />
       )}
 
-      <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} title="Delete this memory?">
-        <p className="text-ink-muted text-sm leading-relaxed mb-6">
+      <Modal
+        open={confirmOpen}
+        onClose={() => !deleting && setConfirmOpen(false)}
+        title="Delete this memory?"
+        footer={
+          <div className="flex items-center justify-end gap-3">
+            <Button variant="ghost" size="sm" onClick={() => setConfirmOpen(false)} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="!bg-red-500 !border-red-500"
+            >
+              {deleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-ink-muted text-sm leading-relaxed">
           This will permanently remove "{memory.title}" and all its photos. This cannot be undone.
         </p>
-        <div className="flex items-center justify-end gap-3">
-          <Button variant="ghost" size="sm" onClick={() => setConfirmOpen(false)} disabled={deleting}>
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="!bg-red-500 !border-red-500"
-          >
-            {deleting ? 'Deleting...' : 'Delete'}
-          </Button>
-        </div>
       </Modal>
     </AppShell>
   )

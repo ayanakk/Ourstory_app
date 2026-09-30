@@ -15,6 +15,7 @@ import CreateMemoryWizard from '../components/memory/CreateMemoryWizard'
 import EmptyState from '../components/ui/EmptyState'
 import { useMemories } from '../hooks/useMemories'
 import { useSpace } from '../hooks/useSpace'
+import { useWishlist } from '../hooks/useWishlist'
 import { supabase } from '../lib/supabase'
 import { getMilestoneDates, onThisDay, getTodayYMD, daysTogether, daysBetween, stats } from '../lib/milestones'
 
@@ -28,6 +29,7 @@ function timeGreeting() {
 export default function Home() {
   const { space, member, partner } = useSpace()
   const { memories, refresh: refreshMemories } = useMemories()
+  const { items: wishlistItems, refresh: refreshWishlist, addItem: addWishlistItem, toggleDone: toggleWishlistDone, convertToMemory } = useWishlist()
   const todayStr = useMemo(() => getTodayYMD(), [])
 
   // Selected date on calendar (YYYY-MM-DD)
@@ -133,6 +135,11 @@ export default function Home() {
     if (!selectedDate) return []
     return onThisDay(memories, selectedDate)
   }, [memories, selectedDate])
+
+  const selectedDateWishlist = useMemo(() => {
+    if (!selectedDate) return []
+    return wishlistItems.filter((it) => it.target_date === selectedDate)
+  }, [wishlistItems, selectedDate])
 
   // Days together counter badge
   const totalDaysTogether = useMemo(() => {
@@ -247,7 +254,7 @@ export default function Home() {
               onSelectDate={handleSelectDate}
               memories={memories}
               milestones={milestones}
-              plans={plans}
+              plans={wishlistItems}
               capsules={capsules}
             />
           </div>
@@ -272,6 +279,14 @@ export default function Home() {
                   plans={selectedDatePlans}
                   capsules={selectedDateCapsules}
                   onThisDayMemories={selectedDateOnThisDay}
+                  bucketItems={selectedDateWishlist}
+                  onAddBucketItem={addWishlistItem}
+                  onToggleBucketDone={toggleWishlistDone}
+                  onConvertBucketItem={convertToMemory}
+                  onMemoryCreated={() => {
+                    refreshMemories()
+                    fetchAuxiliaryData()
+                  }}
                   onClose={() => setSelectedDate(null)}
                   onAddMemory={handleOpenAddMemory}
                   onAddPlan={handleOpenAddPlan}
@@ -312,6 +327,14 @@ export default function Home() {
             plans={selectedDatePlans}
             capsules={selectedDateCapsules}
             onThisDayMemories={selectedDateOnThisDay}
+            bucketItems={selectedDateWishlist}
+            onAddBucketItem={addWishlistItem}
+            onToggleBucketDone={toggleWishlistDone}
+            onConvertBucketItem={convertToMemory}
+            onMemoryCreated={() => {
+              refreshMemories()
+              fetchAuxiliaryData()
+            }}
             onClose={() => setSelectedDate(null)}
             onAddMemory={handleOpenAddMemory}
             onAddPlan={handleOpenAddPlan}
