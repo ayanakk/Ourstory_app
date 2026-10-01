@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, MapPin, Heart, Trash2 } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
@@ -27,6 +27,7 @@ function formatLongDate(dateStr) {
 export default function MemoryDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
   const { member, partner } = useSpace()
   const { getMemoryById, toggleFavorite, deleteMemory } = useMemories()
@@ -36,6 +37,12 @@ export default function MemoryDetail() {
   const [viewerIndex, setViewerIndex] = useState(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  // Go back to wherever we came from; fall back to Our Story on a direct visit
+  const goBack = () => {
+    if (location.key !== 'default') navigate(-1)
+    else navigate('/story')
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -69,7 +76,7 @@ export default function MemoryDetail() {
       return
     }
     toast('Memory deleted')
-    navigate('/story')
+    goBack()
   }
 
   if (loading) {
@@ -111,10 +118,10 @@ export default function MemoryDetail() {
     <AppShell>
       <div className="space-y-8">
         <button
-          onClick={() => navigate('/story')}
+          onClick={goBack}
           className="inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink transition-colors"
         >
-          <ArrowLeft size={14} /> Back to Our Story
+          <ArrowLeft size={14} /> Back
         </button>
 
         <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-[var(--r-md)] overflow-hidden bg-surface-2">
