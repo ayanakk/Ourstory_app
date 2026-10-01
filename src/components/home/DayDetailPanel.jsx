@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X, Calendar, Sparkles, MapPin, Lock, CheckCircle2,
@@ -172,8 +173,9 @@ export default function DayDetailPanel({
           </p>
           <div className="space-y-2.5">
             {memories.map((mem) => (
-              <div
+              <Link
                 key={mem.id}
+                to={`/memory/${mem.id}`}
                 className="group flex items-center gap-3.5 p-3 rounded-[var(--r-xs)] border border-line bg-surface hover:bg-surface-2 transition-colors"
               >
                 <MemoryThumb memory={mem} />
@@ -198,7 +200,8 @@ export default function DayDetailPanel({
                     </p>
                   )}
                 </div>
-              </div>
+                <ArrowRight size={14} className="text-ink-muted flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
+              </Link>
             ))}
           </div>
         </div>
@@ -418,9 +421,10 @@ export default function DayDetailPanel({
               const memParsed = parseYMD(mem.date)
               const yearLabel = memParsed ? memParsed.year : ''
               return (
-                <div
+                <Link
                   key={mem.id}
-                  className="flex items-center gap-3 p-3 rounded-[var(--r-xs)] border border-line bg-surface"
+                  to={`/memory/${mem.id}`}
+                  className="flex items-center gap-3 p-3 rounded-[var(--r-xs)] border border-line bg-surface hover:bg-surface-2 transition-colors"
                 >
                   <MemoryThumb memory={mem} />
                   <div className="flex-1 min-w-0">
@@ -432,7 +436,7 @@ export default function DayDetailPanel({
                       <p className="text-[11px] text-ink-muted truncate">{mem.place_name}</p>
                     )}
                   </div>
-                </div>
+                </Link>
               )
             })}
           </div>
