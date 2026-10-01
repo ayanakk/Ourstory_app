@@ -1,19 +1,57 @@
 import { useState } from 'react'
-import { Moon, Sun, Copy, Check, LogOut } from 'lucide-react'
+import { Moon, Sun, Copy, Check, LogOut, Pencil } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
 import { useAuth } from '../hooks/useAuth'
 import { useSpace } from '../hooks/useSpace'
 import { useTheme } from '../hooks/useTheme'
+import { getTodayYMD } from '../lib/milestones'
 import { toast } from '../components/ui/Toast'
 
 export default function Settings() {
   const { signOut } = useAuth()
-  const { space, member, partner } = useSpace()
+  const { space, member, partner, updateSpace, updateDisplayName } = useSpace()
   const { theme, toggleTheme } = useTheme()
   const [copied, setCopied] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ spaceName: '', startDate: '', displayName: '' })
+
+  const startEditing = () => {
+    setForm({
+      spaceName: space?.name || '',
+      startDate: space?.start_date || '',
+      displayName: member?.display_name || '',
+    })
+    setEditing(true)
+  }
+
+  const handleSave = async (e) => {
+    e.preventDefault()
+    const spaceName = form.spaceName.trim()
+    const displayName = form.displayName.trim()
+    if (!spaceName || !displayName) {
+      toast('Space name and your name can\'t be empty')
+      return
+    }
+    setSaving(true)
+    const changedSpace = spaceName !== (space?.name || '') || form.startDate !== (space?.start_date || '')
+    const changedName = displayName !== (member?.display_name || '')
+    const results = await Promise.all([
+      changedSpace ? updateSpace({ name: spaceName, startDate: form.startDate }) : null,
+      changedName ? updateDisplayName(displayName) : null,
+    ])
+    setSaving(false)
+    if (results.some((r) => r?.error)) {
+      toast('Could not save changes')
+      return
+    }
+    toast('Saved')
+    setEditing(false)
+  }
 
   const inviteLink = space?.invite_code
     ? `${window.location.origin}/join/${space.invite_code}`
@@ -82,13 +120,54 @@ export default function Settings() {
 
         {/* Space info */}
         <Card className="p-6 space-y-5">
-          <h2
-            className="text-lg text-ink"
-            style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
-          >
-            Our Space
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2
+              className="text-lg text-ink"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
+            >
+              Our Space
+            </h2>
+            {!editing && (
+              <Button variant="ghost" size="sm" onClick={startEditing}>
+                <Pencil size={13} className="mr-1.5" /> Edit
+              </Button>
+            )}
+          </div>
 
+          {editing ? (
+            <form onSubmit={handleSave} className="space-y-4">
+              <Input
+                id="settings-space-name"
+                label="Space name"
+                value={form.spaceName}
+                onChange={(e) => setForm((f) => ({ ...f, spaceName: e.target.value }))}
+                required
+              />
+              <Input
+                id="settings-start-date"
+                label="Together since"
+                type="date"
+                value={form.startDate}
+                max={getTodayYMD()}
+                onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
+              />
+              <Input
+                id="settings-display-name"
+                label="Your name"
+                value={form.displayName}
+                onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
+                required
+              />
+              <div className="flex items-center justify-end gap-3 pt-1">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setEditing(false)} disabled={saving}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" size="sm" loading={saving}>
+                  Save
+                </Button>
+              </div>
+            </form>
+          ) : (
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-0.5">
               <p className="text-[10px] uppercase tracking-widest text-ink-muted font-semibold">Space name</p>
@@ -119,6 +198,7 @@ export default function Settings() {
               )}
             </div>
           </div>
+          )}
         </Card>
 
         {/* Invite link */}

@@ -117,6 +117,36 @@ export function SpaceProvider({ children }) {
     [fetchSpaceData]
   )
 
+  const updateSpace = useCallback(
+    async ({ name, startDate }) => {
+      if (!space?.id) return { error: new Error('No active space') }
+      const { data, error } = await supabase
+        .from('spaces')
+        .update({ name, start_date: startDate || null })
+        .eq('id', space.id)
+        .select()
+        .single()
+      if (!error) setSpace(data)
+      return { data, error }
+    },
+    [space]
+  )
+
+  const updateDisplayName = useCallback(
+    async (displayName) => {
+      if (!member?.user_id) return { error: new Error('No active member') }
+      const { data, error } = await supabase
+        .from('members')
+        .update({ display_name: displayName })
+        .eq('user_id', member.user_id)
+        .select()
+        .single()
+      if (!error) setMember(data)
+      return { data, error }
+    },
+    [member]
+  )
+
   const value = useMemo(
     () => ({
       space,
@@ -125,9 +155,11 @@ export function SpaceProvider({ children }) {
       loading,
       createSpace,
       joinSpace,
+      updateSpace,
+      updateDisplayName,
       refresh: fetchSpaceData,
     }),
-    [space, member, partner, loading, createSpace, joinSpace, fetchSpaceData]
+    [space, member, partner, loading, createSpace, joinSpace, updateSpace, updateDisplayName, fetchSpaceData]
   )
 
   return createElement(SpaceContext.Provider, { value }, children)
