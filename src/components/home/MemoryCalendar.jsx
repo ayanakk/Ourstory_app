@@ -338,12 +338,12 @@ export default function MemoryCalendar({
                   className={[
                     'relative flex flex-col items-center justify-between p-1.5 rounded-[var(--r-sm)]',
                     'min-h-[44px] min-w-[44px] w-full transition-all text-xs font-sans',
-                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent',
                     isSelected
                       ? 'border border-accent shadow-sm'
                       : 'border border-transparent hover:bg-surface-2',
                     hasOnThisDay && !isSelected ? 'bg-accent-soft/40' : '',
-                    isToday ? 'ring-1 ring-accent' : '',
+                    isToday ? 'ring-1 ring-inset ring-accent' : '',
                     !isCurrentMonth ? 'opacity-30' : 'text-ink',
                   ].join(' ')}
                   style={{
