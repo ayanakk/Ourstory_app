@@ -98,12 +98,13 @@ export async function deletePhotoFiles(paths) {
   if (error) console.error('Failed to delete photo files:', error)
 }
 
-/** Compresses an image file client-side before upload; falls back to the original on failure. */
+/** Downscales and compresses an image client-side before upload (~40KB max, memories don't need full quality); falls back to the original on failure. */
 export async function compressImage(file) {
   try {
     return await imageCompression(file, {
-      maxSizeMB: 1.5,
-      maxWidthOrHeight: 2000,
+      maxSizeMB: 0.04,
+      maxWidthOrHeight: 540,
+      initialQuality: 0.4,
       useWebWorker: true,
       fileType: 'image/jpeg',
     })
