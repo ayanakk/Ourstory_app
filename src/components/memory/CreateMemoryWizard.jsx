@@ -4,6 +4,7 @@ import { Sparkles, Calendar, MapPin, Smile, ArrowRight, ArrowLeft, Heart, Check,
 import Modal from '../ui/Modal'
 import { Input, Textarea } from '../ui/Input'
 import Button from '../ui/Button'
+import PlaceSearch from './PlaceSearch'
 import { toast } from '../ui/Toast'
 import { useMemories } from '../../hooks/useMemories'
 import { useSpace } from '../../hooks/useSpace'
@@ -324,12 +325,12 @@ export default function CreateMemoryWizard({ open, onClose, initialDate, initial
               />
 
               {/* Place */}
-              <Input
+              <PlaceSearch
                 id="memory-place"
                 label="Place (optional)"
                 placeholder="Montmartre, our balcony, cafe corner..."
                 value={place}
-                onChange={(e) => setPlace(e.target.value)}
+                onChange={setPlace}
               />
 
               {/* Mood picker */}
