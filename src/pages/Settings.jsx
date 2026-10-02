@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Moon, Sun, Copy, Check, LogOut, Pencil, Trash2, HeartCrack } from 'lucide-react'
+import { Moon, Sun, Copy, Check, Share2, LogOut, Pencil, Trash2, HeartCrack } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -58,13 +58,37 @@ export default function Settings() {
     ? `${window.location.origin}/join/${space.invite_code}`
     : ''
 
-  const handleCopy = async () => {
+  const inviteCode = space?.invite_code || ''
+
+  const handleCopyCode = async () => {
+    if (!inviteCode) return
+    try {
+      await navigator.clipboard.writeText(inviteCode)
+      setCopied(true)
+      toast('Invite code copied!')
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast('Could not copy — please copy manually.')
+    }
+  }
+
+  const handleShareLink = async () => {
     if (!inviteLink) return
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Join me on OurStory',
+          text: 'Join our private space on OurStory',
+          url: inviteLink,
+        })
+      } catch (err) {
+        if (err?.name !== 'AbortError') toast('Could not share the link')
+      }
+      return
+    }
     try {
       await navigator.clipboard.writeText(inviteLink)
-      setCopied(true)
       toast('Invite link copied!')
-      setTimeout(() => setCopied(false), 2000)
     } catch {
       toast('Could not copy — please copy manually.')
     }
@@ -213,26 +237,35 @@ export default function Settings() {
                 Invite Your Partner
               </h2>
               <p className="text-xs text-ink-muted mt-1">
-                Share this link so they can join your private space.
+                Share the link, or give them this code to enter when they sign up.
               </p>
             </div>
             <div className="flex items-center gap-2">
               <input
                 readOnly
-                value={inviteLink}
+                value={inviteCode}
                 onFocus={e => e.target.select()}
-                className="flex-1 min-w-0 px-3 py-2.5 rounded-[var(--r-xs)] border border-line bg-surface-2 text-ink-muted text-xs font-mono focus:outline-none"
+                aria-label="Invite code"
+                className="flex-1 min-w-0 px-3 py-2.5 rounded-[var(--r-xs)] border border-line bg-surface-2 text-ink text-lg tracking-widest font-mono focus:outline-none"
               />
               <button
-                onClick={handleCopy}
-                aria-label="Copy invite link"
+                onClick={handleCopyCode}
+                aria-label="Copy invite code"
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-[var(--r-xs)] text-sm font-medium border border-line bg-surface-2 text-ink hover:bg-accent hover:text-accent-ink hover:border-accent transition-all active:scale-95 flex-shrink-0"
                 style={{ transitionDuration: 'var(--dur-fast)' }}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
-                {copied ? 'Copied' : 'Copy'}
+                {copied ? 'Copied' : 'Copy code'}
               </button>
             </div>
+            <button
+              onClick={handleShareLink}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[var(--r-xs)] text-sm font-medium border border-line bg-surface-2 text-ink hover:bg-accent hover:text-accent-ink hover:border-accent transition-all active:scale-95"
+              style={{ transitionDuration: 'var(--dur-fast)' }}
+            >
+              <Share2 size={14} />
+              Share invite link
+            </button>
           </Card>
         )}
 
