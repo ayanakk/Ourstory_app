@@ -10,7 +10,7 @@ import Button from '../ui/Button'
 import EmptyState from '../ui/EmptyState'
 import SignedImage from '../story/SignedImage'
 import PhotoViewer from '../memory/PhotoViewer'
-import AddBucketItemModal, { categoryIcon } from './AddBucketItemModal'
+import AddBucketItemModal, { categoryIcon, CATEGORIES } from './AddBucketItemModal'
 import CreateMemoryWizard from '../memory/CreateMemoryWizard'
 import { getSignedPhotoUrl } from '../../hooks/useMemories'
 import { useSpace } from '../../hooks/useSpace'
@@ -57,6 +57,10 @@ function MemoryThumb({ memory }) {
   )
 }
 
+function categoryLabel(category) {
+  return CATEGORIES.find((c) => c.id === category)?.label || 'Bucket list'
+}
+
 function formatDateHeader(dateStr) {
   const parsed = parseYMD(dateStr)
   if (!parsed) return dateStr
@@ -94,17 +98,14 @@ export default function DayDetailPanel({
   const [personFilter, setPersonFilter] = useState('both')
   const [viewerIndex, setViewerIndex] = useState(null)
   const [addBucketOpen, setAddBucketOpen] = useState(false)
-  const [justCompletedId, setJustCompletedId] = useState(null)
   const [convertWizard, setConvertWizard] = useState(null) // { itemId, title, place }
 
   const handleToggleBucketDone = (item) => {
     const next = !item.is_done
     onToggleBucketDone?.(item.id, next)
-    setJustCompletedId(next ? item.id : null)
   }
 
   const handleTurnIntoMemory = (item) => {
-    setJustCompletedId(null)
     setConvertWizard({ itemId: item.id, title: item.title, place: item.place_name })
   }
 
@@ -217,7 +218,7 @@ export default function DayDetailPanel({
             onClick={() => setAddBucketOpen(true)}
             className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:opacity-80 transition-opacity"
           >
-            <Plus size={12} />+ Add to bucket list
+            <Plus size={12} />Add to bucket list
           </button>
         </div>
 
@@ -232,63 +233,67 @@ export default function DayDetailPanel({
               return (
                 <div key={item.id}>
                   <div
-                    className={`flex items-center gap-3 p-3 rounded-[var(--r-xs)] border ${
+                    className={`group relative flex items-center gap-3 p-3.5 rounded-[var(--r-sm)] border transition-all hover:-translate-y-px hover:shadow-[var(--shadow)] hover:border-accent/40 ${
                       item.is_done ? 'border-line bg-surface-2' : 'border-line bg-surface'
                     }`}
+                    style={{ transitionDuration: 'var(--dur-fast)' }}
                   >
-                    <button
-                      onClick={() => handleToggleBucketDone(item)}
-                      aria-label={item.is_done ? 'Mark as not done' : 'Mark as done'}
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors ${
-                        item.is_done ? 'bg-accent border-accent text-accent-ink' : 'border-line text-transparent hover:border-accent'
-                      }`}
-                    >
-                      <motion.span
-                        initial={false}
-                        animate={{ scale: item.is_done ? 1 : 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex items-center justify-center"
+                    {/* Checkbox sits above the card-wide link; gone once the item is a memory */}
+                    {!item.converted_memory_id && (
+                      <button
+                        onClick={() => handleToggleBucketDone(item)}
+                        aria-label={item.is_done ? 'Mark as not done' : 'Mark as done'}
+                        className={`relative z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                          item.is_done ? 'bg-accent border-accent text-accent-ink' : 'border-line text-transparent hover:border-accent'
+                        }`}
                       >
-                        <Check size={12} strokeWidth={3} />
-                      </motion.span>
-                    </button>
-                    <Icon size={13} className="text-accent flex-shrink-0" />
+                        <motion.span
+                          initial={false}
+                          animate={{ scale: item.is_done ? 1 : 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex items-center justify-center"
+                        >
+                          <Check size={13} strokeWidth={3} />
+                        </motion.span>
+                      </button>
+                    )}
+                    <div className="w-8 h-8 rounded-full bg-accent-soft flex items-center justify-center flex-shrink-0">
+                      <Icon size={14} className="text-accent" />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-xs font-medium truncate ${
+                      {/* after: stretches the link over the whole card */}
+                      <Link
+                        to={`/wishlist/${item.id}`}
+                        className={`block text-sm font-medium truncate after:absolute after:inset-0 after:content-[''] after:rounded-[var(--r-sm)] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-accent ${
                           item.is_done ? 'text-ink-muted line-through' : 'text-ink'
                         }`}
                       >
                         {item.title}
+                      </Link>
+                      <p className="text-[11px] text-ink-muted truncate mt-0.5 flex items-center gap-1">
+                        {categoryLabel(item.category)}
+                        {item.place_name && (
+                          <>
+                            <span aria-hidden="true">·</span>
+                            <MapPin size={10} className="flex-shrink-0" />
+                            <span className="truncate">{item.place_name}</span>
+                          </>
+                        )}
                       </p>
-                      {item.place_name && (
-                        <p className="text-[11px] text-ink-muted truncate">{item.place_name}</p>
+                      {item.is_done && !item.converted_memory_id && (
+                        <button
+                          onClick={() => handleTurnIntoMemory(item)}
+                          className="relative z-10 mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:opacity-80 transition-opacity"
+                        >
+                          <Sparkles size={11} /> Turn into Memory
+                        </button>
                       )}
                     </div>
+                    <ArrowRight
+                      size={14}
+                      className="text-ink-muted flex-shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:text-accent"
+                    />
                   </div>
-
-                  <AnimatePresence>
-                    {justCompletedId === item.id && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mt-2 p-3 rounded-[var(--r-xs)] border border-accent/25 bg-accent-soft flex items-center justify-between gap-2 flex-wrap">
-                          <p className="text-xs text-ink font-medium">Turn this into a Memory?</p>
-                          <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => setJustCompletedId(null)}>
-                              Not now
-                            </Button>
-                            <Button variant="primary" size="sm" onClick={() => handleTurnIntoMemory(item)}>
-                              Turn into Memory
-                            </Button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
               )
             })}

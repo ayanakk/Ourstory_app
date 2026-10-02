@@ -10,6 +10,7 @@ import Places from './pages/Places.jsx'
 import PhotoWall from './pages/PhotoWall.jsx'
 import Capsules from './pages/Capsules.jsx'
 import Wishlist from './pages/Wishlist.jsx'
+import WishlistDetail from './pages/WishlistDetail.jsx'
 import Numbers from './pages/Numbers.jsx'
 import Search from './pages/Search.jsx'
 import Settings from './pages/Settings.jsx'
@@ -115,6 +116,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Capsules />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/wishlist/:id"
+          element={
+            <ProtectedRoute>
+              <WishlistDetail />
             </ProtectedRoute>
           }
         />

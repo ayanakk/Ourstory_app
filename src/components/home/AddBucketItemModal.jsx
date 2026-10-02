@@ -5,7 +5,7 @@ import { Input, Textarea } from '../ui/Input'
 import Button from '../ui/Button'
 import { toast } from '../ui/Toast'
 
-const CATEGORIES = [
+export const CATEGORIES = [
   { id: 'place', label: 'Place', Icon: MapPin },
   { id: 'restaurant', label: 'Restaurant', Icon: Utensils },
   { id: 'movie', label: 'Movie', Icon: Film },
@@ -14,7 +14,7 @@ const CATEGORIES = [
   { id: 'trip', label: 'Trip', Icon: Plane },
 ]
 
-const PRIORITIES = [
+export const PRIORITIES = [
   { value: 1, label: 'High' },
   { value: 2, label: 'Medium' },
   { value: 3, label: 'Low' },

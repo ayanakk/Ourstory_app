@@ -69,6 +69,24 @@ export function useWishlist() {
     return { error }
   }, [])
 
+  const getItemById = useCallback(async (id) => {
+    const { data, error } = await supabase.from('wishlist').select('*').eq('id', id).single()
+    return { data, error }
+  }, [])
+
+  const deleteItem = useCallback(
+    async (id) => {
+      const removed = items.find((it) => it.id === id)
+      setItems((prev) => prev.filter((it) => it.id !== id))
+      const { error } = await supabase.from('wishlist').delete().eq('id', id)
+      if (error && removed) {
+        setItems((prev) => [...prev, removed])
+      }
+      return { error }
+    },
+    [items]
+  )
+
   return {
     items,
     loading,
@@ -76,5 +94,7 @@ export function useWishlist() {
     addItem,
     toggleDone,
     convertToMemory,
+    getItemById,
+    deleteItem,
   }
 }
