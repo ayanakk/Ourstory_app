@@ -264,7 +264,7 @@ export default function MemoryCalendar({
       </div>
 
       {/* ── Month Grid with Slide Animation & Mobile Drag ───── */}
-      <div className="relative overflow-hidden min-h-[310px]">
+      <div className="relative overflow-hidden">
         <AnimatePresence custom={direction} mode="wait">
           <motion.div
             key={`${viewDate.year}-${viewDate.month}`}

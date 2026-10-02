@@ -10,7 +10,7 @@ export default function EmptyState({ message, subtitle, action, className = '' }
   return (
     <div
       className={[
-        'flex flex-col items-center justify-center text-center gap-4 py-16 px-6',
+        'flex flex-col items-center justify-center text-center gap-4 py-6 px-6',
         className,
       ].join(' ')}
     >
