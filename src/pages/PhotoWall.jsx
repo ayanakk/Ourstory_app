@@ -187,7 +187,7 @@ export default function PhotoWall() {
       </div>
 
       {/* Filter pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 -mx-6 px-6 lg:-mx-10 lg:px-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-2 min-w-0 overflow-x-auto pb-3 mb-6 -mx-6 px-6 lg:-mx-10 lg:px-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {FILTERS.map((f) => (
           <button
             key={f.id}

@@ -174,7 +174,7 @@ export default function AppShell({ children }) {
 
       {/* ── Main Content ─────────────────────────────────────── */}
       <main
-        className="flex-1 flex flex-col"
+        className="flex-1 flex flex-col min-w-0"
         style={{ paddingLeft: 'var(--sidebar-w)' }}
       >
         {/* Offset for desktop sidebar */}
@@ -184,7 +184,7 @@ export default function AppShell({ children }) {
           }
         `}</style>
 
-        <div className="flex-1 w-full max-w-[1100px] mx-auto px-6 lg:px-10 py-8 lg:py-10">
+        <div className="flex-1 w-full min-w-0 overflow-x-hidden max-w-[1100px] mx-auto px-6 lg:px-10 py-8 lg:py-10">
           <PageTransition key={location.pathname}>
             {children}
           </PageTransition>

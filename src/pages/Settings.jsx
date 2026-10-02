@@ -246,7 +246,7 @@ export default function Settings() {
                 value={inviteCode}
                 onFocus={e => e.target.select()}
                 aria-label="Invite code"
-                className="flex-1 min-w-0 px-3 py-2.5 rounded-[var(--r-xs)] border border-line bg-surface-2 text-ink text-lg tracking-widest font-mono focus:outline-none"
+                className="flex-1 w-full min-w-0 px-3 py-2.5 rounded-[var(--r-xs)] border border-line bg-surface-2 text-ink text-base sm:text-lg tracking-wider font-mono focus:outline-none"
               />
               <button
                 onClick={handleCopyCode}
@@ -286,7 +286,7 @@ export default function Settings() {
             </div>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-medium text-ink">Delete account</p>
               <p className="text-xs text-ink-muted mt-0.5">
                 Permanently erase your account and everything in your space.
