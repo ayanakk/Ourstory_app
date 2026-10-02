@@ -13,7 +13,11 @@ A shared space for couples to log memories, milestones, and moments together. Bu
    cp .env.example .env
    ```
    Then set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env`.
-3. Apply the database schema in `supabase/schema.sql` to your Supabase project.
+3. Apply the database schema in `supabase/schema.sql` to your Supabase project. On an existing database, run `supabase/migrations/2026-10-delete-account.sql` instead.
+4. Deploy the account-deletion function (needs the Supabase CLI, linked to your project):
+   ```
+   supabase functions deploy delete-account
+   ```
 
 ## Run
 
@@ -37,3 +41,5 @@ npm run build
 - `src/pages` — route-level page components
 - `src/design/tokens.css` — design tokens (colors, spacing, radius, fonts)
 - `supabase/schema.sql` — database schema
+- `supabase/migrations` — incremental SQL for existing databases
+- `supabase/functions/delete-account` — Edge Function that permanently deletes an account

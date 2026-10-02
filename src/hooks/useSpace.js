@@ -147,6 +147,24 @@ export function SpaceProvider({ children }) {
     [member]
   )
 
+  const checkDeleteAccount = useCallback(async () => {
+    const { data, error } = await supabase.rpc('delete_account_check')
+    return { data, error }
+  }, [])
+
+  const deleteAccount = useCallback(async (password) => {
+    const { data, error } = await supabase.functions.invoke('delete-account', { body: { password } })
+    if (!error) return { data, error: null, code: null }
+    // Non-2xx responses carry the error code in the response body
+    let code = null
+    try {
+      code = (await error.context.json()).error
+    } catch {
+      // network failure etc.
+    }
+    return { data: null, error, code }
+  }, [])
+
   const value = useMemo(
     () => ({
       space,
@@ -157,9 +175,11 @@ export function SpaceProvider({ children }) {
       joinSpace,
       updateSpace,
       updateDisplayName,
+      checkDeleteAccount,
+      deleteAccount,
       refresh: fetchSpaceData,
     }),
-    [space, member, partner, loading, createSpace, joinSpace, updateSpace, updateDisplayName, fetchSpaceData]
+    [space, member, partner, loading, createSpace, joinSpace, updateSpace, updateDisplayName, checkDeleteAccount, deleteAccount, fetchSpaceData]
   )
 
   return createElement(SpaceContext.Provider, { value }, children)

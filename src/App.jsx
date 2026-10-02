@@ -16,6 +16,8 @@ import Settings from './pages/Settings.jsx'
 import Login from './pages/Login.jsx'
 import Onboarding from './pages/Onboarding.jsx'
 import Join from './pages/Join.jsx'
+import DeleteAccount from './pages/DeleteAccount.jsx'
+import AccountDeleted from './pages/AccountDeleted.jsx'
 
 function ProtectedRoute({ children }) {
   const { user, loading: authLoading } = useAuth()
@@ -50,6 +52,15 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/join/:code" element={<Join />} />
+        <Route path="/account-deleted" element={<AccountDeleted />} />
+        <Route
+          path="/delete-account"
+          element={
+            <ProtectedRoute>
+              <DeleteAccount />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/"

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Moon, Sun, Copy, Check, LogOut, Pencil } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Moon, Sun, Copy, Check, LogOut, Pencil, Trash2, HeartCrack } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -234,6 +235,38 @@ export default function Settings() {
             </div>
           </Card>
         )}
+
+        {/* Danger zone */}
+        <Card className="p-6 space-y-4">
+          <h2
+            className="text-lg text-ink"
+            style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
+          >
+            Danger zone
+          </h2>
+          <div className="flex items-center justify-between gap-4 opacity-60" aria-disabled="true">
+            <div>
+              <p className="text-sm font-medium text-ink flex items-center gap-1.5">
+                <HeartCrack size={14} /> We've broken up
+              </p>
+              <p className="text-xs text-ink-muted mt-0.5">Coming soon</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-ink">Delete account</p>
+              <p className="text-xs text-ink-muted mt-0.5">
+                Permanently erase your account and everything in your space.
+              </p>
+            </div>
+            <Link
+              to="/delete-account"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-line text-sm font-medium text-red-500 hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex-shrink-0"
+            >
+              <Trash2 size={14} /> Delete
+            </Link>
+          </div>
+        </Card>
 
         {/* Sign out */}
         <div className="pt-2">
