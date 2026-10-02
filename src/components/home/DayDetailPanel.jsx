@@ -484,8 +484,8 @@ export default function DayDetailPanel({
         </div>
       )}
 
-      {/* Quick Action footer if memories already exist */}
-      {memories.length > 0 && isPastOrToday && (
+      {/* Quick Action footer when the day has other content (memories, plans, capsules, milestones) */}
+      {(memories.length > 0 || plans.length > 0 || capsules.length > 0 || milestones.length > 0) && isPastOrToday && (
         <div className="pt-2 border-t border-line">
           <Button
             variant="ghost"
@@ -494,7 +494,7 @@ export default function DayDetailPanel({
             onClick={() => onAddMemory?.(date)}
           >
             <Plus size={13} className="mr-1.5" />
-            Add another memory on this date
+            {memories.length > 0 ? 'Add another memory on this date' : 'Add a memory for this day'}
           </Button>
         </div>
       )}
