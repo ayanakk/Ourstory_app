@@ -16,6 +16,8 @@ import EmptyState from '../components/ui/EmptyState'
 import { useMemories } from '../hooks/useMemories'
 import { useSpace } from '../hooks/useSpace'
 import { useWishlist } from '../hooks/useWishlist'
+import { useSpecialDates } from '../hooks/useSpecialDates'
+import { getSpecialDays, expandYearlyDates } from '../lib/specialDays'
 import { supabase } from '../lib/supabase'
 import { getMilestoneDates, onThisDay, getTodayYMD, daysTogether, daysBetween, stats } from '../lib/milestones'
 
@@ -30,6 +32,7 @@ export default function Home() {
   const { space, member, partner } = useSpace()
   const { memories, refresh: refreshMemories } = useMemories()
   const { items: wishlistItems, refresh: refreshWishlist, addItem: addWishlistItem, toggleDone: toggleWishlistDone, convertToMemory } = useWishlist()
+  const { items: yearlyDates, addItem: addYearlyDate, deleteItem: deleteYearlyDate } = useSpecialDates()
   const todayStr = useMemo(() => getTodayYMD(), [])
 
   // Selected date on calendar (YYYY-MM-DD)
@@ -140,6 +143,18 @@ export default function Home() {
     if (!selectedDate) return []
     return wishlistItems.filter((it) => it.target_date === selectedDate)
   }, [wishlistItems, selectedDate])
+
+  // Built-in couple days + user-added yearly dates, resolved for a given year
+  const specialDaysForYear = useCallback(
+    (year) => [...getSpecialDays(year), ...expandYearlyDates(yearlyDates, year)],
+    [yearlyDates]
+  )
+
+  const selectedDateSpecialDays = useMemo(() => {
+    if (!selectedDate) return []
+    const year = parseInt(selectedDate.slice(0, 4), 10)
+    return specialDaysForYear(year).filter((d) => d.date === selectedDate)
+  }, [specialDaysForYear, selectedDate])
 
   // Days together counter badge
   const totalDaysTogether = useMemo(() => {
@@ -256,6 +271,7 @@ export default function Home() {
               milestones={milestones}
               plans={wishlistItems}
               capsules={capsules}
+              specialDaysForYear={specialDaysForYear}
             />
           </div>
 
@@ -278,6 +294,12 @@ export default function Home() {
                   milestones={selectedDateMilestones}
                   plans={selectedDatePlans}
                   capsules={selectedDateCapsules}
+            specialDays={selectedDateSpecialDays}
+            onAddYearlyDate={addYearlyDate}
+            onDeleteYearlyDate={deleteYearlyDate}
+                  specialDays={selectedDateSpecialDays}
+                  onAddYearlyDate={addYearlyDate}
+                  onDeleteYearlyDate={deleteYearlyDate}
                   onThisDayMemories={selectedDateOnThisDay}
                   bucketItems={selectedDateWishlist}
                   onAddBucketItem={addWishlistItem}

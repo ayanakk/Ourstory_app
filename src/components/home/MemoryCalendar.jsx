@@ -37,6 +37,7 @@ export default function MemoryCalendar({
   milestones = [],
   plans = [],
   capsules = [],
+  specialDaysForYear,
 }) {
   const todayStr = useMemo(() => getTodayYMD(), [])
   const today = useMemo(() => new Date(), [])
@@ -106,6 +107,19 @@ export default function MemoryCalendar({
     }
     return map
   }, [capsules])
+
+  // Special days for the viewed year, plus neighbours so overflow days in Jan/Dec resolve
+  const specialByDate = useMemo(() => {
+    const map = new Map()
+    if (!specialDaysForYear) return map
+    for (const y of [viewDate.year - 1, viewDate.year, viewDate.year + 1]) {
+      for (const s of specialDaysForYear(y)) {
+        if (!map.has(s.date)) map.set(s.date, [])
+        map.get(s.date).push(s)
+      }
+    }
+    return map
+  }, [specialDaysForYear, viewDate.year])
 
   // Month navigation handlers
   const handlePrevMonth = useCallback(() => {
@@ -289,6 +303,7 @@ export default function MemoryCalendar({
               const hasMilestone = milestonesByDate.has(dateStr)
               const hasPlan = plansByDate.has(dateStr)
               const hasCapsule = capsulesByDate.has(dateStr)
+              const hasSpecial = specialByDate.has(dateStr)
 
               // "On this day" in previous years
               const onThisDayMatches = onThisDay(memories, dateStr)
@@ -325,6 +340,13 @@ export default function MemoryCalendar({
                 markerItems.push({
                   key: 'cap',
                   node: <Lock size={9} className="text-accent" />,
+                })
+              }
+
+              if (hasSpecial) {
+                markerItems.push({
+                  key: 'special',
+                  node: <span className="w-1.5 h-1.5 rounded-[1px] border border-accent bg-accent-soft" />,
                 })
               }
 
@@ -398,6 +420,10 @@ export default function MemoryCalendar({
         <div className="flex items-center gap-1.5">
           <Lock size={10} className="text-accent" />
           <span>Capsule</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-[1px] border border-accent bg-accent-soft" />
+          <span>Special day</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-[2px] bg-accent-soft border border-accent/25" />
