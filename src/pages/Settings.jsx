@@ -77,8 +77,8 @@ export default function Settings() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Join me on OurStory',
-          text: 'Join our private space on OurStory',
+          title: 'Join me on OurStory 💕',
+          text: `Hey love! 💕 I've created a private space for just the two of us on OurStory — a place to keep our memories, plans and special moments together. Tap the link to join me:`,
           url: inviteLink,
         })
       } catch (err) {
@@ -87,8 +87,29 @@ export default function Settings() {
       return
     }
     try {
-      await navigator.clipboard.writeText(inviteLink)
-      toast('Invite link copied!')
+      await navigator.clipboard.writeText(
+        `Hey love! 💕 I've created a private space for just the two of us on OurStory — a place to keep our memories, plans and special moments together. Tap the link to join me: ${inviteLink}`
+      )
+      toast('Invite message copied!')
+    } catch {
+      toast('Could not copy — please copy manually.')
+    }
+  }
+
+  const handleShareApp = async () => {
+    const message = `I've been using OurStory — a private space for couples to keep their memories, plans and special moments together. Check it out! 💕`
+    const url = window.location.origin
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'OurStory', text: message, url })
+      } catch (err) {
+        if (err?.name !== 'AbortError') toast('Could not share the app')
+      }
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(`${message} ${url}`)
+      toast('Link copied!')
     } catch {
       toast('Could not copy — please copy manually.')
     }
@@ -268,6 +289,29 @@ export default function Settings() {
             </button>
           </Card>
         )}
+
+        {/* Share the app */}
+        <Card className="p-6 space-y-4">
+          <div>
+            <h2
+              className="text-lg text-ink"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
+            >
+              Share OurStory
+            </h2>
+            <p className="text-xs text-ink-muted mt-0.5">
+              Know another couple who'd love a private space of their own? Tell them about it.
+            </p>
+          </div>
+          <button
+            onClick={handleShareApp}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[var(--r-xs)] text-sm font-medium border border-line bg-surface-2 text-ink hover:bg-accent hover:text-accent-ink hover:border-accent transition-all active:scale-95"
+            style={{ transitionDuration: 'var(--dur-fast)' }}
+          >
+            <Share2 size={14} />
+            Share the app
+          </button>
+        </Card>
 
         {/* Danger zone */}
         <Card className="p-6 space-y-4">
