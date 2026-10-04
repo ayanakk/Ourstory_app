@@ -5,7 +5,7 @@ import {
   ListChecks, BarChart2, Search, Settings, Plus
 } from 'lucide-react'
 import { useSpace } from '../../hooks/useSpace'
-import Modal from '../ui/Modal'
+import CreateMemoryWizard from '../memory/CreateMemoryWizard'
 import Button from '../ui/Button'
 import PageTransition from './PageTransition'
 
@@ -99,6 +99,7 @@ function BottomNavItem({ to, label, Icon }) {
 export default function AppShell({ children }) {
   const { member, partner } = useSpace()
   const [createOpen, setCreateOpen] = useState(false)
+  const navigate = useNavigate()
   const location = useLocation()
 
   const partnerLine = (() => {
@@ -226,26 +227,14 @@ export default function AppShell({ children }) {
         })}
       </nav>
 
-      {/* ── Create Memory Modal (placeholder) ─────────────── */}
-      <Modal
+      {/* ── Create Memory Wizard ──────────────────────────── */}
+      <CreateMemoryWizard
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="Create a Memory"
-        footer={
-          <Button
-            variant="secondary"
-            size="md"
-            className="w-full"
-            onClick={() => setCreateOpen(false)}
-          >
-            Close
-          </Button>
-        }
-      >
-        <p className="text-ink-muted text-sm leading-relaxed">
-          Memory creation is coming in the next chapter. Stay tuned.
-        </p>
-      </Modal>
+        onSuccess={(memory) => {
+          if (memory?.id) navigate(`/memory/${memory.id}`)
+        }}
+      />
     </div>
   )
 }

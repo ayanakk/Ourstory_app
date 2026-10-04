@@ -294,9 +294,6 @@ export default function Home() {
                   milestones={selectedDateMilestones}
                   plans={selectedDatePlans}
                   capsules={selectedDateCapsules}
-            specialDays={selectedDateSpecialDays}
-            onAddYearlyDate={addYearlyDate}
-            onDeleteYearlyDate={deleteYearlyDate}
                   specialDays={selectedDateSpecialDays}
                   onAddYearlyDate={addYearlyDate}
                   onDeleteYearlyDate={deleteYearlyDate}
@@ -348,6 +345,9 @@ export default function Home() {
             milestones={selectedDateMilestones}
             plans={selectedDatePlans}
             capsules={selectedDateCapsules}
+            specialDays={selectedDateSpecialDays}
+            onAddYearlyDate={addYearlyDate}
+            onDeleteYearlyDate={deleteYearlyDate}
             onThisDayMemories={selectedDateOnThisDay}
             bucketItems={selectedDateWishlist}
             onAddBucketItem={addWishlistItem}
