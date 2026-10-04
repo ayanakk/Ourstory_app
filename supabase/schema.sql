@@ -99,6 +99,19 @@ create table wishlist (
   created_at timestamptz default now()
 );
 
+create table special_dates (
+  id uuid primary key default gen_random_uuid(),
+  space_id uuid not null references spaces(id) on delete cascade,
+  created_by uuid references auth.users(id) default auth.uid(),
+  title text not null,
+  emoji text,
+  month int not null check (month between 1 and 12),
+  day int not null check (day between 1 and 31),
+  year_started int,                     -- optional, e.g. birth year; shows "Nth" in the calendar
+  note text,
+  created_at timestamptz default now()
+);
+
 create table checkins (
   user_id uuid references auth.users(id) on delete cascade,
   space_id uuid references spaces(id) on delete cascade,
@@ -237,6 +250,7 @@ alter table photos         enable row level security;
 alter table little_moments enable row level security;
 alter table capsules       enable row level security;
 alter table wishlist       enable row level security;
+alter table special_dates  enable row level security;
 alter table checkins       enable row level security;
 alter table favorites      enable row level security;
 
@@ -272,6 +286,12 @@ create policy "delete" on little_moments for delete using (author_id = auth.uid(
 create policy "insert" on capsules for insert with check (is_member(space_id) and author_id = auth.uid());
 create policy "delete own unopened" on capsules for delete
   using (author_id = auth.uid() and opens_at > now());
+
+-- special_dates
+create policy "read"   on special_dates for select using (is_member(space_id));
+create policy "insert" on special_dates for insert with check (is_member(space_id));
+create policy "update" on special_dates for update using (is_member(space_id));
+create policy "delete" on special_dates for delete using (is_member(space_id));
 
 -- wishlist
 create policy "read"   on wishlist for select using (is_member(space_id));

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X, Calendar, Sparkles, MapPin, Lock, CheckCircle2,
-  Clock, Plus, ArrowRight, Heart, Check
+  Clock, Plus, ArrowRight, Heart, Check, Trash2
 } from 'lucide-react'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
@@ -11,6 +11,7 @@ import EmptyState from '../ui/EmptyState'
 import SignedImage from '../story/SignedImage'
 import PhotoViewer from '../memory/PhotoViewer'
 import AddBucketItemModal, { categoryIcon, CATEGORIES } from './AddBucketItemModal'
+import AddYearlyDateModal from './AddYearlyDateModal'
 import CreateMemoryWizard from '../memory/CreateMemoryWizard'
 import { getSignedPhotoUrl } from '../../hooks/useMemories'
 import { useSpace } from '../../hooks/useSpace'
@@ -79,6 +80,9 @@ export default function DayDetailPanel({
   milestones = [],
   plans = [],
   capsules = [],
+  specialDays = [],
+  onAddYearlyDate,
+  onDeleteYearlyDate,
   onThisDayMemories = [],
   bucketItems = [],
   onAddBucketItem,
@@ -98,6 +102,7 @@ export default function DayDetailPanel({
   const [personFilter, setPersonFilter] = useState('both')
   const [viewerIndex, setViewerIndex] = useState(null)
   const [addBucketOpen, setAddBucketOpen] = useState(false)
+  const [addYearlyOpen, setAddYearlyOpen] = useState(false)
   const [convertWizard, setConvertWizard] = useState(null) // { itemId, title, place }
 
   const handleToggleBucketDone = (item) => {
@@ -161,6 +166,33 @@ export default function DayDetailPanel({
             >
               <Sparkles size={14} className="text-accent flex-shrink-0" />
               <span>{m.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Special days (built-in couple days + yearly dates) */}
+      {specialDays.length > 0 && (
+        <div className="space-y-2">
+          {specialDays.map((s) => (
+            <div
+              key={s.id}
+              className="flex items-start gap-2.5 px-3.5 py-2.5 rounded-[var(--r-xs)] border border-line bg-surface text-ink text-xs"
+            >
+              <span className="text-base leading-none select-none" aria-hidden="true">{s.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium">{s.title}</p>
+                {s.description && <p className="text-[11px] text-ink-muted mt-0.5">{s.description}</p>}
+              </div>
+              {!s.builtIn && onDeleteYearlyDate && (
+                <button
+                  onClick={() => onDeleteYearlyDate(s.id)}
+                  aria-label={`Remove ${s.title}`}
+                  className="p-1 rounded-full text-ink-muted hover:text-ink hover:bg-surface-2 transition-colors flex-shrink-0"
+                >
+                  <Trash2 size={13} />
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -449,7 +481,7 @@ export default function DayDetailPanel({
       )}
 
       {/* Empty States */}
-      {memories.length === 0 && plans.length === 0 && capsules.length === 0 && milestones.length === 0 && (
+      {memories.length === 0 && plans.length === 0 && capsules.length === 0 && milestones.length === 0 && specialDays.length === 0 && (
         <div className="py-6 text-center space-y-4">
           <p
             className="text-base text-ink-muted italic font-display"
@@ -484,8 +516,17 @@ export default function DayDetailPanel({
         </div>
       )}
 
+      {onAddYearlyDate && (
+        <button
+          onClick={() => setAddYearlyOpen(true)}
+          className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:opacity-80 transition-opacity"
+        >
+          <Plus size={12} />Add a yearly date (birthday, anniversary...)
+        </button>
+      )}
+
       {/* Quick Action footer when the day has other content (memories, plans, capsules, milestones) */}
-      {(memories.length > 0 || plans.length > 0 || capsules.length > 0 || milestones.length > 0) && isPastOrToday && (
+      {(memories.length > 0 || plans.length > 0 || capsules.length > 0 || milestones.length > 0 || specialDays.length > 0) && isPastOrToday && (
         <div className="pt-2 border-t border-line">
           <Button
             variant="ghost"
@@ -512,6 +553,12 @@ export default function DayDetailPanel({
         date={date}
         onClose={() => setAddBucketOpen(false)}
         onAdd={(item) => onAddBucketItem?.(item)}
+      />
+      <AddYearlyDateModal
+        open={addYearlyOpen}
+        date={date}
+        onClose={() => setAddYearlyOpen(false)}
+        onAdd={(item) => onAddYearlyDate?.(item)}
       />
       <CreateMemoryWizard
         open={!!convertWizard}
