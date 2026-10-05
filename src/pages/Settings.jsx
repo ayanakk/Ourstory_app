@@ -12,6 +12,7 @@ import { getTodayYMD } from '../lib/milestones'
 import { toast } from '../components/ui/Toast'
 import InvitePartner from '../components/InvitePartner'
 import Modal from '../components/ui/Modal'
+import NotificationSettings from '../components/NotificationSettings'
 
 export default function Settings() {
   const { signOut } = useAuth()
@@ -245,6 +246,8 @@ export default function Settings() {
             <InvitePartner inviteCode={inviteCode} />
           </Card>
         )}
+
+        <NotificationSettings />
 
         {/* Share the app */}
         <Card className="p-6 space-y-4">

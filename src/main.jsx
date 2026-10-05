@@ -6,6 +6,7 @@ import App from './App.jsx'
 import { AuthProvider } from './hooks/useAuth'
 import { SpaceProvider } from './hooks/useSpace'
 import { ToastProvider } from './components/ui/Toast.jsx'
+import { registerServiceWorker } from './lib/push'
 
 // Apply saved theme before first render to prevent flash
 ;(function () {
@@ -24,3 +25,5 @@ createRoot(document.getElementById('root')).render(
     </AuthProvider>
   </StrictMode>,
 )
+
+registerServiceWorker()
