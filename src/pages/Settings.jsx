@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Moon, Sun, Copy, Check, Share2, LogOut, Pencil, Trash2, HeartCrack } from 'lucide-react'
+import { Moon, Sun, Share2, LogOut, Pencil, Trash2, HeartCrack } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -10,12 +10,12 @@ import { useSpace } from '../hooks/useSpace'
 import { useTheme } from '../hooks/useTheme'
 import { getTodayYMD } from '../lib/milestones'
 import { toast } from '../components/ui/Toast'
+import InvitePartner from '../components/InvitePartner'
 
 export default function Settings() {
   const { signOut } = useAuth()
   const { space, member, partner, updateSpace, updateDisplayName } = useSpace()
   const { theme, toggleTheme } = useTheme()
-  const [copied, setCopied] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -54,47 +54,7 @@ export default function Settings() {
     setEditing(false)
   }
 
-  const inviteLink = space?.invite_code
-    ? `${window.location.origin}/join/${space.invite_code}`
-    : ''
-
   const inviteCode = space?.invite_code || ''
-
-  const handleCopyCode = async () => {
-    if (!inviteCode) return
-    try {
-      await navigator.clipboard.writeText(inviteCode)
-      setCopied(true)
-      toast('Invite code copied!')
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      toast('Could not copy — please copy manually.')
-    }
-  }
-
-  const handleShareLink = async () => {
-    if (!inviteLink) return
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Join me on OurStory 💕',
-          text: `Hey love! 💕 I've created a private space for just the two of us on OurStory — a place to keep our memories, plans and special moments together. Tap the link to join me:`,
-          url: inviteLink,
-        })
-      } catch (err) {
-        if (err?.name !== 'AbortError') toast('Could not share the link')
-      }
-      return
-    }
-    try {
-      await navigator.clipboard.writeText(
-        `Hey love! 💕 I've created a private space for just the two of us on OurStory — a place to keep our memories, plans and special moments together. Tap the link to join me: ${inviteLink}`
-      )
-      toast('Invite message copied!')
-    } catch {
-      toast('Could not copy — please copy manually.')
-    }
-  }
 
   const handleShareApp = async () => {
     const message = `I've been using OurStory — a private space for couples to keep their memories, plans and special moments together. Check it out! 💕`
@@ -248,7 +208,7 @@ export default function Settings() {
         </Card>
 
         {/* Invite link */}
-        {inviteLink && (
+        {inviteCode && (
           <Card className="p-6 space-y-4">
             <div>
               <h2
@@ -261,32 +221,7 @@ export default function Settings() {
                 Share the link, or give them this code to enter when they sign up.
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                readOnly
-                value={inviteCode}
-                onFocus={e => e.target.select()}
-                aria-label="Invite code"
-                className="flex-1 w-full min-w-0 px-3 py-2.5 rounded-[var(--r-xs)] border border-line bg-surface-2 text-ink text-base sm:text-lg tracking-wider font-mono focus:outline-none"
-              />
-              <button
-                onClick={handleCopyCode}
-                aria-label="Copy invite code"
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[var(--r-xs)] text-sm font-medium border border-line bg-surface-2 text-ink hover:bg-accent hover:text-accent-ink hover:border-accent transition-all active:scale-95 flex-shrink-0"
-                style={{ transitionDuration: 'var(--dur-fast)' }}
-              >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-                {copied ? 'Copied' : 'Copy code'}
-              </button>
-            </div>
-            <button
-              onClick={handleShareLink}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[var(--r-xs)] text-sm font-medium border border-line bg-surface-2 text-ink hover:bg-accent hover:text-accent-ink hover:border-accent transition-all active:scale-95"
-              style={{ transitionDuration: 'var(--dur-fast)' }}
-            >
-              <Share2 size={14} />
-              Share invite link
-            </button>
+            <InvitePartner inviteCode={inviteCode} />
           </Card>
         )}
 

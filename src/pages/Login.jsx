@@ -32,6 +32,8 @@ export default function Login() {
     return <Navigate to="/onboarding" replace />
   }
 
+  const invited = !!localStorage.getItem('pending_invite_code')
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setErrorMsg('')
@@ -66,6 +68,14 @@ export default function Login() {
 
   return (
     <AuthPageWrapper>
+      {invited && (
+        <p
+          className="w-full max-w-[440px] mb-4 px-4 py-3 rounded-[var(--r-sm)] border border-line text-sm text-center text-ink"
+          style={{ background: 'var(--accent-soft)' }}
+        >
+          💌 You've been invited to a shared space. Sign up or sign in to join.
+        </p>
+      )}
       {/* Glass card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -83,7 +93,7 @@ export default function Login() {
             Welcome to your<br />little world.
           </h1>
           <p className="text-sm text-ink-muted">
-            {tab === 'signin' ? 'Sign in to continue your story.' : 'Create an account to start.'}
+            {tab === 'signin' ? 'Sign in to continue your story.' : 'Create a free account to start your private space.'}
           </p>
         </div>
 
@@ -189,7 +199,7 @@ export function AuthPageWrapper({ children }) {
           opacity: 0.6,
         }}
       />
-      <div className="relative z-10 w-full flex justify-center">
+      <div className="relative z-10 w-full flex flex-col items-center py-4">
         {children}
       </div>
     </div>
