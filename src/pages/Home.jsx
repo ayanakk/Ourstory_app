@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Plus, ArrowLeft } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import Button from '../components/ui/Button'
-import { toast } from '../components/ui/Toast'
 import MemoryCalendar from '../components/home/MemoryCalendar'
 import DayDetailPanel from '../components/home/DayDetailPanel'
 import UpcomingList from '../components/home/UpcomingList'
@@ -12,6 +11,7 @@ import OnThisDay from '../components/home/OnThisDay'
 import MilestoneCard from '../components/home/MilestoneCard'
 import SurpriseMe from '../components/home/SurpriseMe'
 import CreateMemoryWizard from '../components/memory/CreateMemoryWizard'
+import AddBucketItemModal from '../components/home/AddBucketItemModal'
 import EmptyState from '../components/ui/EmptyState'
 import { useMemories } from '../hooks/useMemories'
 import { useSpace } from '../hooks/useSpace'
@@ -39,12 +39,13 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [isMobile, setIsMobile] = useState(false)
 
-  // Wishlist / Plans and Capsules state
+  // Bucket list / Plans and Capsules state
   const [plans, setPlans] = useState([])
   const [capsules, setCapsules] = useState([])
 
   // Create Memory Wizard state
   const [wizardOpen, setWizardOpen] = useState(false)
+  const [planDate, setPlanDate] = useState(null) // day being planned from the calendar
   const [wizardInitialDate, setWizardInitialDate] = useState(todayStr)
 
   // Track viewport size for mobile bottom sheet vs desktop column
@@ -57,11 +58,11 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Fetch Wishlist plans and Capsules for current space
+  // Fetch Bucket list plans and Capsules for current space
   const fetchAuxiliaryData = useCallback(async () => {
     if (!space?.id) return
 
-    // 1. Wishlist plans with target_date
+    // 1. Bucket list plans with target_date
     try {
       const { data: wishlistData } = await supabase
         .from('wishlist')
@@ -73,7 +74,7 @@ export default function Home() {
 
       if (wishlistData) setPlans(wishlistData)
     } catch (e) {
-      console.error('Failed to load wishlist:', e)
+      console.error('Failed to load bucket list:', e)
     }
 
     // 2. Capsules opening dates
@@ -123,11 +124,6 @@ export default function Home() {
     if (!selectedDate) return []
     return milestones.filter((m) => m.date === selectedDate)
   }, [milestones, selectedDate])
-
-  const selectedDatePlans = useMemo(() => {
-    if (!selectedDate) return []
-    return plans.filter((p) => p.target_date?.split('T')[0] === selectedDate)
-  }, [plans, selectedDate])
 
   const selectedDateCapsules = useMemo(() => {
     if (!selectedDate) return []
@@ -181,9 +177,7 @@ export default function Home() {
     setWizardOpen(true)
   }
 
-  const handleOpenAddPlan = (date) => {
-    toast(`Wishlist planning for ${date} coming soon ✨`)
-  }
+  const handleOpenAddPlan = (date) => setPlanDate(date)
 
   const handleSelectDate = (dateStr) => {
     if (selectedDate === dateStr && !isMobile) {
@@ -292,14 +286,12 @@ export default function Home() {
                   date={selectedDate}
                   memories={selectedDateMemories}
                   milestones={selectedDateMilestones}
-                  plans={selectedDatePlans}
                   capsules={selectedDateCapsules}
                   specialDays={selectedDateSpecialDays}
                   onAddYearlyDate={addYearlyDate}
                   onDeleteYearlyDate={deleteYearlyDate}
                   onThisDayMemories={selectedDateOnThisDay}
                   bucketItems={selectedDateWishlist}
-                  onAddBucketItem={addWishlistItem}
                   onToggleBucketDone={toggleWishlistDone}
                   onConvertBucketItem={convertToMemory}
                   onMemoryCreated={() => {
@@ -343,14 +335,12 @@ export default function Home() {
             date={selectedDate}
             memories={selectedDateMemories}
             milestones={selectedDateMilestones}
-            plans={selectedDatePlans}
             capsules={selectedDateCapsules}
             specialDays={selectedDateSpecialDays}
             onAddYearlyDate={addYearlyDate}
             onDeleteYearlyDate={deleteYearlyDate}
             onThisDayMemories={selectedDateOnThisDay}
             bucketItems={selectedDateWishlist}
-            onAddBucketItem={addWishlistItem}
             onToggleBucketDone={toggleWishlistDone}
             onConvertBucketItem={convertToMemory}
             onMemoryCreated={() => {
@@ -364,6 +354,17 @@ export default function Home() {
           />
         )}
 
+        {/* ── Plan something for a day ───────────────────────── */}
+        <AddBucketItemModal
+          open={!!planDate}
+          date={planDate}
+          onClose={() => setPlanDate(null)}
+          onAdd={async (item) => {
+            const res = await addWishlistItem(item)
+            if (!res.error) fetchAuxiliaryData()
+            return res
+          }}
+        />
         {/* ── Create Memory Wizard ───────────────────────────── */}
         <CreateMemoryWizard
           open={wizardOpen}

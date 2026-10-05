@@ -103,6 +103,19 @@ export function useMemories() {
     []
   )
 
+  const updateMemory = useCallback(async (id, fields) => {
+    const { data, error: updateErr } = await supabase
+      .from('memories')
+      .update(fields)
+      .eq('id', id)
+      .select('*, photos(*)')
+      .single()
+    if (!updateErr) {
+      setMemories((prev) => prev.map((m) => (m.id === id ? { ...m, ...data } : m)))
+    }
+    return { data, error: updateErr }
+  }, [])
+
   const deleteMemory = useCallback(async (memory) => {
     const paths = (memory.photos || []).map((p) => p.path).filter(Boolean)
     if (paths.length) {
@@ -125,6 +138,7 @@ export function useMemories() {
     createMemory,
     getMemoryById,
     toggleFavorite,
+    updateMemory,
     deleteMemory,
     getSignedUrl: getSignedPhotoUrl,
   }
