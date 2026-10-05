@@ -101,7 +101,7 @@ export default function UpcomingList({
             </div>
           )}
 
-          {/* Next Planned Wishlist Item */}
+          {/* Next Planned Bucket List Item */}
           {upcomingPlan && (
             <div
               onClick={() => onSelectDate?.(upcomingPlan.target_date)}

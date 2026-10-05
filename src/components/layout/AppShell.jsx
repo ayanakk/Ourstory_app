@@ -16,7 +16,7 @@ const NAV_ITEMS = [
   { to: '/places',      label: 'Places',      Icon: MapPin },
   { to: '/photo-wall',  label: 'Photo Wall',  Icon: Image },
   { to: '/capsules',    label: 'Capsules',    Icon: Package },
-  { to: '/wishlist',    label: 'Wishlist',    Icon: ListChecks },
+  { to: '/wishlist',    label: 'Bucket list', Icon: ListChecks },
   { to: '/numbers',     label: 'Numbers',     Icon: BarChart2 },
   { to: '/search',      label: 'Search',      Icon: Search },
   { to: '/settings',    label: 'Settings',    Icon: Settings },

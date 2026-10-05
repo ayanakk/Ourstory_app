@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { MapPin, Calendar } from 'lucide-react'
+import { MapPin, Calendar, Plus } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import EmptyState from '../components/ui/EmptyState'
-import { categoryIcon } from '../components/home/AddBucketItemModal'
+import Button from '../components/ui/Button'
+import AddBucketItemModal, { categoryIcon } from '../components/home/AddBucketItemModal'
 import { useWishlist } from '../hooks/useWishlist'
 import { parseYMD } from '../lib/milestones'
 
@@ -44,36 +46,59 @@ function ItemRow({ item }) {
 }
 
 export default function Wishlist() {
-  const { items, loading } = useWishlist()
+  const { items, loading, addItem } = useWishlist()
+  const [addOpen, setAddOpen] = useState(false)
   const todo = items.filter((it) => !it.is_done)
+  const dated = todo.filter((it) => it.target_date)
+  const someday = todo.filter((it) => !it.target_date)
   const done = items.filter((it) => it.is_done)
 
   return (
     <AppShell>
-      <div className="space-y-3 mb-12">
-        <p className="text-xs font-semibold uppercase tracking-widest text-accent">Wishlist</p>
-        <h1
-          className="text-4xl lg:text-5xl text-ink leading-tight"
-          style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
-        >
-          Wishlist
-        </h1>
-        <p className="text-ink-muted text-base">Things to do, places to go, dreams to chase.</p>
+      <div className="flex items-end justify-between gap-4 mb-12">
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-widest text-accent">Bucket list</p>
+          <h1
+            className="text-4xl lg:text-5xl text-ink leading-tight"
+            style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
+          >
+            Bucket list
+          </h1>
+          <p className="text-ink-muted text-base">Things to do, places to go, dreams to chase.</p>
+        </div>
+        <Button variant="secondary" size="sm" onClick={() => setAddOpen(true)} className="hidden sm:inline-flex flex-shrink-0">
+          <Plus size={14} className="mr-1.5" />
+          Add
+        </Button>
       </div>
 
       {loading ? (
         <div className="h-32 rounded-[var(--r-md)] bg-surface-2 animate-pulse" />
       ) : items.length === 0 ? (
-        <EmptyState
-          message="Some adventures haven't happened yet."
-          subtitle="Start planning the places you'll go and the things you'll do together."
-        />
+        <div className="space-y-5">
+          <EmptyState
+            message="Some adventures haven't happened yet."
+            subtitle="Start planning the places you'll go and the things you'll do together."
+          />
+          <div className="flex justify-center">
+            <Button variant="secondary" size="sm" onClick={() => setAddOpen(true)}>
+              <Plus size={14} className="mr-1.5" />
+              Add to your bucket list
+            </Button>
+          </div>
+        </div>
       ) : (
         <div className="space-y-8 max-w-lg">
-          {todo.length > 0 && (
+          {dated.length > 0 && (
             <section className="space-y-2.5">
-              <p className="text-xs font-semibold uppercase tracking-widest text-ink-muted">To do ({todo.length})</p>
-              {todo.map((it) => <ItemRow key={it.id} item={it} />)}
+              <p className="text-xs font-semibold uppercase tracking-widest text-ink-muted">Planned ({dated.length})</p>
+              {dated.map((it) => <ItemRow key={it.id} item={it} />)}
+            </section>
+          )}
+          {someday.length > 0 && (
+            <section className="space-y-2.5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-ink-muted">Someday ({someday.length})</p>
+              {someday.map((it) => <ItemRow key={it.id} item={it} />)}
             </section>
           )}
           {done.length > 0 && (
@@ -84,6 +109,16 @@ export default function Wishlist() {
           )}
         </div>
       )}
+
+      <button
+        onClick={() => setAddOpen(true)}
+        aria-label="Add to bucket list"
+        className="sm:hidden fixed right-5 bottom-24 z-30 w-14 h-14 rounded-full bg-accent text-accent-ink shadow-[var(--shadow)] flex items-center justify-center active:scale-95 transition-transform"
+      >
+        <Plus size={24} />
+      </button>
+
+      <AddBucketItemModal open={addOpen} onClose={() => setAddOpen(false)} onAdd={addItem} />
     </AppShell>
   )
 }

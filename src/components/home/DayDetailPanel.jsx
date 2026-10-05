@@ -10,7 +10,7 @@ import Button from '../ui/Button'
 import EmptyState from '../ui/EmptyState'
 import SignedImage from '../story/SignedImage'
 import PhotoViewer from '../memory/PhotoViewer'
-import AddBucketItemModal, { categoryIcon, CATEGORIES } from './AddBucketItemModal'
+import { categoryIcon, CATEGORIES } from './AddBucketItemModal'
 import AddYearlyDateModal from './AddYearlyDateModal'
 import CreateMemoryWizard from '../memory/CreateMemoryWizard'
 import { getSignedPhotoUrl } from '../../hooks/useMemories'
@@ -78,14 +78,12 @@ export default function DayDetailPanel({
   date,
   memories = [],
   milestones = [],
-  plans = [],
   capsules = [],
   specialDays = [],
   onAddYearlyDate,
   onDeleteYearlyDate,
   onThisDayMemories = [],
   bucketItems = [],
-  onAddBucketItem,
   onToggleBucketDone,
   onConvertBucketItem,
   onMemoryCreated,
@@ -101,7 +99,6 @@ export default function DayDetailPanel({
   const { member, partner } = useSpace()
   const [personFilter, setPersonFilter] = useState('both')
   const [viewerIndex, setViewerIndex] = useState(null)
-  const [addBucketOpen, setAddBucketOpen] = useState(false)
   const [addYearlyOpen, setAddYearlyOpen] = useState(false)
   const [convertWizard, setConvertWizard] = useState(null) // { itemId, title, place }
 
@@ -242,17 +239,9 @@ export default function DayDetailPanel({
 
       {/* Bucket list */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-widest text-ink-muted">
-            Bucket list{bucketItems.length > 0 ? ` (${bucketItems.length})` : ''}
-          </p>
-          <button
-            onClick={() => setAddBucketOpen(true)}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:opacity-80 transition-opacity"
-          >
-            <Plus size={12} />Add to bucket list
-          </button>
-        </div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-ink-muted">
+          Bucket list{bucketItems.length > 0 ? ` (${bucketItems.length})` : ''}
+        </p>
 
         {bucketItems.length === 0 ? (
           isFuture ? (
@@ -388,33 +377,6 @@ export default function DayDetailPanel({
         </div>
       )}
 
-      {/* Planned items / Wishlist */}
-      {plans.length > 0 && (
-        <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-ink-muted">
-            Planned Adventures
-          </p>
-          <div className="space-y-2">
-            {plans.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-3 p-3 rounded-[var(--r-xs)] border border-line bg-surface"
-              >
-                <div className="w-5 h-5 rounded-full border border-accent flex items-center justify-center text-accent flex-shrink-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-ink truncate">{item.title}</p>
-                  {item.place_name && (
-                    <p className="text-[11px] text-ink-muted">{item.place_name}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Capsules opening */}
       {capsules.length > 0 && (
         <div className="space-y-3">
@@ -481,7 +443,7 @@ export default function DayDetailPanel({
       )}
 
       {/* Empty States */}
-      {memories.length === 0 && plans.length === 0 && capsules.length === 0 && milestones.length === 0 && specialDays.length === 0 && (
+      {memories.length === 0 && bucketItems.length === 0 && capsules.length === 0 && milestones.length === 0 && specialDays.length === 0 && (
         <div className="py-6 text-center space-y-4">
           <p
             className="text-base text-ink-muted italic font-display"
@@ -526,7 +488,7 @@ export default function DayDetailPanel({
       )}
 
       {/* Quick Action footer when the day has other content (memories, plans, capsules, milestones) */}
-      {(memories.length > 0 || plans.length > 0 || capsules.length > 0 || milestones.length > 0 || specialDays.length > 0) && isPastOrToday && (
+      {(memories.length > 0 || bucketItems.length > 0 || capsules.length > 0 || milestones.length > 0 || specialDays.length > 0) && isPastOrToday && (
         <div className="pt-2 border-t border-line">
           <Button
             variant="ghost"
@@ -548,12 +510,6 @@ export default function DayDetailPanel({
 
   const overlays = (
     <>
-      <AddBucketItemModal
-        open={addBucketOpen}
-        date={date}
-        onClose={() => setAddBucketOpen(false)}
-        onAdd={(item) => onAddBucketItem?.(item)}
-      />
       <AddYearlyDateModal
         open={addYearlyOpen}
         date={date}

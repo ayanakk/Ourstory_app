@@ -4,6 +4,7 @@ import Modal from '../ui/Modal'
 import { Input, Textarea } from '../ui/Input'
 import Button from '../ui/Button'
 import { toast } from '../ui/Toast'
+import { parseYMD } from '../../lib/milestones'
 
 export const CATEGORIES = [
   { id: 'place', label: 'Place', Icon: MapPin },
@@ -24,25 +25,28 @@ export function categoryIcon(category) {
   return CATEGORIES.find((c) => c.id === category)?.Icon || Star
 }
 
-export default function AddBucketItemModal({ open, date, onClose, onAdd }) {
+/** Adds a bucket list item, or edits one when `item` is given (then the date can be changed too). */
+export default function AddBucketItemModal({ open, date, item, onClose, onAdd }) {
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('place')
   const [priority, setPriority] = useState(2)
   const [notes, setNotes] = useState('')
   const [place, setPlace] = useState('')
+  const [itemDate, setItemDate] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
     if (open) {
-      setTitle('')
-      setCategory('place')
-      setPriority(2)
-      setNotes('')
-      setPlace('')
+      setTitle(item?.title || '')
+      setCategory(item?.category || 'place')
+      setPriority(item?.priority ?? 2)
+      setNotes(item?.notes || '')
+      setPlace(item?.place_name || '')
+      setItemDate(item?.target_date || '')
       setError('')
     }
-  }, [open])
+  }, [open, item])
 
   const handleSubmit = async (e) => {
     e?.preventDefault()
@@ -58,22 +62,27 @@ export default function AddBucketItemModal({ open, date, onClose, onAdd }) {
       priority,
       notes: notes.trim() || null,
       place_name: place.trim() || null,
-      target_date: date,
+      target_date: item ? itemDate || null : date || null,
     })
     setLoading(false)
     if (saveError) {
       setError(saveError.message || 'Failed to save')
       return
     }
-    toast('Added to your bucket list')
+    toast(item ? 'Bucket list item updated' : 'Added to your bucket list')
     onClose?.()
   }
+
+  const p = date ? parseYMD(date) : null
+  const dateLabel = p
+    ? new Date(p.year, p.month - 1, p.day).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : ''
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title="Add to Bucket List"
+      title={item ? 'Edit bucket list item' : 'Add to Bucket list'}
       footer={
         <div className="flex items-center justify-end gap-3">
           <Button variant="ghost" size="sm" type="button" onClick={onClose}>
@@ -86,6 +95,7 @@ export default function AddBucketItemModal({ open, date, onClose, onAdd }) {
       }
     >
       <form id="bucket-item-form" onSubmit={handleSubmit} className="space-y-4">
+        {!item && dateLabel && <p className="text-sm text-ink-muted">For {dateLabel}</p>}
         {error && (
           <div className="p-3 rounded-[var(--r-xs)] bg-red-500/10 border border-red-500/20 text-red-500 text-xs">
             {error}
@@ -146,6 +156,16 @@ export default function AddBucketItemModal({ open, date, onClose, onAdd }) {
             ))}
           </div>
         </div>
+
+        {item && (
+          <Input
+            id="bucket-date"
+            label="Date (optional)"
+            type="date"
+            value={itemDate}
+            onChange={(e) => setItemDate(e.target.value)}
+          />
+        )}
 
         <Input
           id="bucket-place"

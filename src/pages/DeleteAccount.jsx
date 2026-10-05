@@ -13,7 +13,7 @@ const REMOVED = [
   'All memories and their photos',
   'Private notes',
   'Time capsules and letters',
-  'Your wishlist and check-ins',
+  'Your bucket list and check-ins',
   'The invite link, which stops working immediately',
 ]
 

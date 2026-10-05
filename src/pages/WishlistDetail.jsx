@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
-import { ArrowLeft, MapPin, Calendar, Check, Trash2, ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Check, Trash2, ArrowRight, Sparkles, Pencil } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import CreateMemoryWizard from '../components/memory/CreateMemoryWizard'
 import { toast } from '../components/ui/Toast'
-import { categoryIcon, CATEGORIES, PRIORITIES } from '../components/home/AddBucketItemModal'
+import AddBucketItemModal, { categoryIcon, CATEGORIES, PRIORITIES } from '../components/home/AddBucketItemModal'
 import { useWishlist } from '../hooks/useWishlist'
 import { parseYMD, getTodayYMD } from '../lib/milestones'
 
@@ -21,15 +21,16 @@ export default function WishlistDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const { getItemById, toggleDone, deleteItem, convertToMemory } = useWishlist()
+  const { getItemById, updateItem, toggleDone, deleteItem, convertToMemory } = useWishlist()
 
   const [item, setItem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [wizardOpen, setWizardOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
 
-  // Go back to wherever we came from; fall back to the wishlist on a direct visit
+  // Go back to wherever we came from; fall back to the bucket list on a direct visit
   const goBack = () => {
     if (location.key !== 'default') navigate(-1)
     else navigate('/wishlist')
@@ -72,7 +73,7 @@ export default function WishlistDetail() {
       toast('Could not delete item')
       return
     }
-    toast('Removed from bucket list')
+    toast('Removed from your bucket list')
     goBack()
   }
 
@@ -95,7 +96,7 @@ export default function WishlistDetail() {
             This item could not be found.
           </p>
           <Button variant="secondary" size="sm" onClick={() => navigate('/wishlist')}>
-            <ArrowLeft size={14} className="mr-1.5" /> Back to Wishlist
+            <ArrowLeft size={14} className="mr-1.5" /> Back to Bucket list
           </Button>
         </div>
       </AppShell>
@@ -168,7 +169,10 @@ export default function WishlistDetail() {
           )}
         </div>
 
-        <div className="pt-4 border-t border-line">
+        <div className="pt-4 border-t border-line flex items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
+            <Pencil size={14} className="mr-1.5" /> Edit
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -179,6 +183,17 @@ export default function WishlistDetail() {
           </Button>
         </div>
       </div>
+
+      <AddBucketItemModal
+        open={editOpen}
+        item={item}
+        onClose={() => setEditOpen(false)}
+        onAdd={async (fields) => {
+          const res = await updateItem(item.id, fields)
+          if (!res.error) setItem(res.data)
+          return res
+        }}
+      />
 
       <CreateMemoryWizard
         open={wizardOpen}

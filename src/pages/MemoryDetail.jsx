@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, MapPin, Heart, Trash2 } from 'lucide-react'
+import { ArrowLeft, MapPin, Heart, Trash2, Pencil } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import { toast } from '../components/ui/Toast'
 import SignedImage from '../components/story/SignedImage'
 import PhotoViewer from '../components/memory/PhotoViewer'
+import EditMemoryModal from '../components/memory/EditMemoryModal'
 import { useMemories } from '../hooks/useMemories'
 import { useAuth } from '../hooks/useAuth'
 import { useSpace } from '../hooks/useSpace'
@@ -30,13 +31,14 @@ export default function MemoryDetail() {
   const location = useLocation()
   const { user } = useAuth()
   const { member, partner } = useSpace()
-  const { getMemoryById, toggleFavorite, deleteMemory } = useMemories()
+  const { getMemoryById, toggleFavorite, updateMemory, deleteMemory } = useMemories()
 
   const [memory, setMemory] = useState(null)
   const [loading, setLoading] = useState(true)
   const [viewerIndex, setViewerIndex] = useState(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
 
   // Go back to wherever we came from; fall back to Our Story on a direct visit
   const goBack = () => {
@@ -64,6 +66,15 @@ export default function MemoryDetail() {
       setMemory((m) => ({ ...m, is_favorite: !next }))
       toast('Could not update favorite')
     }
+  }
+
+  const handleSave = async (fields) => {
+    const res = await updateMemory(memory.id, fields)
+    if (!res.error) {
+      setMemory((m) => ({ ...m, ...res.data }))
+      toast('Memory updated')
+    }
+    return res
   }
 
   const handleDelete = async () => {
@@ -193,8 +204,11 @@ export default function MemoryDetail() {
           </div>
         )}
 
-        {isAuthor && (
-          <div className="pt-4 border-t border-line">
+        <div className="pt-4 border-t border-line flex items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
+            <Pencil size={14} className="mr-1.5" /> Edit this memory
+          </Button>
+          {isAuthor && (
             <Button
               variant="ghost"
               size="sm"
@@ -203,9 +217,11 @@ export default function MemoryDetail() {
             >
               <Trash2 size={14} className="mr-1.5" /> Delete this memory
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      <EditMemoryModal open={editOpen} memory={memory} onClose={() => setEditOpen(false)} onSave={handleSave} onPhotosChanged={load} />
 
       {viewerIndex !== null && (
         <PhotoViewer photos={allPhotos} initialIndex={viewerIndex} onClose={() => setViewerIndex(null)} />
