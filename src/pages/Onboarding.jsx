@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import { useSpace } from '../hooks/useSpace'
@@ -14,6 +14,8 @@ const CARD_HOVER = {
 
 export default function Onboarding() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const returnTo = location.state?.from ? location.state.from.pathname + (location.state.from.search || '') : '/'
   const { user, loading: authLoading } = useAuth()
   const { space, loading: spaceLoading, createSpace, joinSpace } = useSpace()
 
@@ -44,7 +46,7 @@ export default function Onboarding() {
     )
   }
   if (!user) return <Navigate to="/login" replace />
-  if (space) return <Navigate to="/" replace />
+  if (space) return <Navigate to={returnTo} replace />
 
   const handleCreate = async (e) => {
     e.preventDefault()
@@ -55,7 +57,7 @@ export default function Onboarding() {
     try {
       const { error } = await createSpace(spaceName.trim(), startDate || null, createDisplayName.trim())
       if (error) setErrorMsg(error.message)
-      else { localStorage.removeItem('pending_invite_code'); navigate('/', { replace: true }) }
+      else { localStorage.removeItem('pending_invite_code'); navigate(returnTo, { replace: true }) }
     } catch (err) { setErrorMsg(err.message || 'Failed to create space.') }
     finally { setIsSubmitting(false) }
   }
@@ -69,7 +71,7 @@ export default function Onboarding() {
     try {
       const { error } = await joinSpace(inviteCode.trim(), joinDisplayName.trim())
       if (error) setErrorMsg(error.message)
-      else { localStorage.removeItem('pending_invite_code'); navigate('/', { replace: true }) }
+      else { localStorage.removeItem('pending_invite_code'); navigate(returnTo, { replace: true }) }
     } catch (err) { setErrorMsg(err.message || 'Failed to join space.') }
     finally { setIsSubmitting(false) }
   }

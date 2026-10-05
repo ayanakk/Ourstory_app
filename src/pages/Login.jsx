@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import { useSpace } from '../hooks/useSpace'
@@ -9,6 +9,8 @@ import { Input } from '../components/ui/Input'
 export default function Login() {
   const { user, loading: authLoading, signIn, signUp } = useAuth()
   const { space, loading: spaceLoading } = useSpace()
+  const location = useLocation()
+  const returnTo = location.state?.from ? location.state.from.pathname + (location.state.from.search || '') : '/'
 
   const [tab, setTab] = useState('signin') // 'signin' | 'signup'
   const [email, setEmail] = useState('')
@@ -24,7 +26,7 @@ export default function Login() {
   }
 
   if (user) {
-    if (space) return <Navigate to="/" replace />
+    if (space) return <Navigate to={returnTo} replace />
     const pendingCode = localStorage.getItem('pending_invite_code')
     if (pendingCode) return <Navigate to={`/join/${pendingCode}`} replace />
     return <Navigate to="/onboarding" replace />

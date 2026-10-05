@@ -1,40 +1,48 @@
-import { createContext, useContext, useEffect, useState, useCallback, useMemo, createElement } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo, createElement } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
 
 const SpaceContext = createContext(null)
 
 export function SpaceProvider({ children }) {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
+  const userId = user?.id ?? null
+  const hasLoadedRef = useRef(false)
   const [space, setSpace] = useState(null)
   const [member, setMember] = useState(null)
   const [partner, setPartner] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [fetching, setFetching] = useState(true)
+  const [loadedFor, setLoadedFor] = useState(null) // user id whose space data has been fetched
 
   const fetchSpaceData = useCallback(async () => {
-    if (!user) {
+    if (!userId) {
+      hasLoadedRef.current = false
       setSpace(null)
       setMember(null)
       setPartner(null)
-      setLoading(false)
+      setFetching(false)
       return
     }
 
-    setLoading(true)
+    // Only show the full-screen loader on the first load; later refreshes are silent
+    if (!hasLoadedRef.current) setFetching(true)
     try {
       // 1. Query members table for the current user's membership
       const { data: myMember, error: memberErr } = await supabase
         .from('members')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .maybeSingle()
 
       if (memberErr) {
         console.error('Error fetching member:', memberErr)
-        setMember(null)
-        setSpace(null)
-        setPartner(null)
-        setLoading(false)
+        // Keep what we have on a failed silent refresh (e.g. flaky mobile network)
+        if (!hasLoadedRef.current) {
+          setMember(null)
+          setSpace(null)
+          setPartner(null)
+        }
+        setFetching(false)
         return
       }
 
@@ -42,7 +50,7 @@ export function SpaceProvider({ children }) {
         setMember(null)
         setSpace(null)
         setPartner(null)
-        setLoading(false)
+        setFetching(false)
         return
       }
 
@@ -62,7 +70,7 @@ export function SpaceProvider({ children }) {
         .from('members')
         .select('*')
         .eq('space_id', myMember.space_id)
-        .neq('user_id', user.id)
+        .neq('user_id', userId)
         .maybeSingle()
 
       if (partnerErr) {
@@ -74,13 +82,17 @@ export function SpaceProvider({ children }) {
       setPartner(partnerData ?? null)
     } catch (err) {
       console.error('Unexpected error fetching space data:', err)
-      setMember(null)
-      setSpace(null)
-      setPartner(null)
+      if (!hasLoadedRef.current) {
+        setMember(null)
+        setSpace(null)
+        setPartner(null)
+      }
     } finally {
-      setLoading(false)
+      hasLoadedRef.current = true
+      setLoadedFor(userId)
+      setFetching(false)
     }
-  }, [user])
+  }, [userId])
 
   useEffect(() => {
     fetchSpaceData()
@@ -164,6 +176,10 @@ export function SpaceProvider({ children }) {
     }
     return { data: null, error, code }
   }, [])
+
+  // Stay in "loading" until auth has resolved and this user's space has been fetched,
+  // so route guards never see "signed in, no space" for a render and redirect to onboarding.
+  const loading = authLoading || fetching || (!!userId && loadedFor !== userId)
 
   const value = useMemo(
     () => ({
