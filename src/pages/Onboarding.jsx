@@ -5,6 +5,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useSpace } from '../hooks/useSpace'
 import Button from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
+import InvitePartner from '../components/InvitePartner'
+import AppIntro from '../components/AppIntro'
 import { AuthPageWrapper } from './Login'
 
 const CARD_HOVER = {
@@ -36,6 +38,7 @@ export default function Onboarding() {
 
   const [errorMsg, setErrorMsg] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [justCreated, setJustCreated] = useState(false)
 
   if (authLoading || (user && spaceLoading)) {
     return (
@@ -46,7 +49,7 @@ export default function Onboarding() {
     )
   }
   if (!user) return <Navigate to="/login" replace />
-  if (space) return <Navigate to={returnTo} replace />
+  if (space && !justCreated) return <Navigate to={returnTo} replace />
 
   const handleCreate = async (e) => {
     e.preventDefault()
@@ -54,11 +57,12 @@ export default function Onboarding() {
     if (!spaceName.trim()) { setErrorMsg('Please enter a name for your space.'); return }
     if (!createDisplayName.trim()) { setErrorMsg('Please enter your display name.'); return }
     setIsSubmitting(true)
+    setJustCreated(true) // hold the user here: the space appears before this promise resolves
     try {
       const { error } = await createSpace(spaceName.trim(), startDate || null, createDisplayName.trim())
-      if (error) setErrorMsg(error.message)
-      else { localStorage.removeItem('pending_invite_code'); navigate(returnTo, { replace: true }) }
-    } catch (err) { setErrorMsg(err.message || 'Failed to create space.') }
+      if (error) { setJustCreated(false); setErrorMsg(error.message) }
+      else localStorage.removeItem('pending_invite_code')
+    } catch (err) { setJustCreated(false); setErrorMsg(err.message || 'Failed to create space.') }
     finally { setIsSubmitting(false) }
   }
 
@@ -76,6 +80,44 @@ export default function Onboarding() {
     finally { setIsSubmitting(false) }
   }
 
+  if (justCreated && space) {
+    return (
+      <AuthPageWrapper>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full max-w-[480px] rounded-[var(--r-md)] border border-line p-10"
+          style={{ background: 'var(--glass)', backdropFilter: 'blur(20px)', boxShadow: 'var(--shadow)' }}
+        >
+          <div className="text-center mb-6">
+            <h1
+              className="text-[28px] text-ink leading-tight mb-2"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
+            >
+              Your space is ready.<br />Now invite your person.
+            </h1>
+            <p className="text-sm text-ink-muted leading-relaxed">
+              Share this link, or give them the code to enter when they sign up. Only the two of you can ever be in this space.
+            </p>
+          </div>
+          <InvitePartner inviteCode={space.invite_code} />
+          <Button
+            variant="primary"
+            size="lg"
+            className="w-full mt-5"
+            onClick={() => navigate(returnTo, { replace: true })}
+          >
+            Continue to our space
+          </Button>
+          <p className="text-xs text-ink-muted text-center mt-3">
+            You can always find this later in Settings.
+          </p>
+        </motion.div>
+      </AuthPageWrapper>
+    )
+  }
+
   return (
     <AuthPageWrapper>
       <motion.div
@@ -84,6 +126,16 @@ export default function Onboarding() {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-[480px]"
       >
+        <AppIntro />
+        {!mode && (
+          <ol className="mb-5 grid grid-cols-3 gap-2 text-center text-xs text-ink-muted">
+            {['Create your space', 'Invite your partner', 'Start saving memories'].map((t, i) => (
+              <li key={t} className="rounded-[var(--r-sm)] border border-line p-2.5" style={{ background: 'var(--surface-2)' }}>
+                <span className="block font-semibold text-accent mb-0.5">{i + 1}</span>{t}
+              </li>
+            ))}
+          </ol>
+        )}
         {/* Glass card */}
         <div
           className="rounded-[var(--r-md)] border border-line p-10"

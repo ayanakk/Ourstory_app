@@ -90,8 +90,11 @@ export default function Join() {
             className="text-[28px] text-ink leading-tight mb-2"
             style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
           >
-            You&apos;re invited.
+            Your partner invited you.
           </h1>
+          <p className="text-sm text-ink-muted mb-1">
+            Join their private space — just the two of you.
+          </p>
           <p className="text-sm text-ink-muted">
             Code:{' '}
             <span
