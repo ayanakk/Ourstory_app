@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { useSpace } from './hooks/useSpace'
 
@@ -23,6 +23,7 @@ import AccountDeleted from './pages/AccountDeleted.jsx'
 function ProtectedRoute({ children }) {
   const { user, loading: authLoading } = useAuth()
   const { space, loading: spaceLoading } = useSpace()
+  const location = useLocation()
 
   if (authLoading || (user && spaceLoading)) {
     return (
@@ -36,11 +37,11 @@ function ProtectedRoute({ children }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace state={{ from: location }} />
   }
 
   if (!space) {
-    return <Navigate to="/onboarding" replace />
+    return <Navigate to="/onboarding" replace state={{ from: location }} />
   }
 
   return children

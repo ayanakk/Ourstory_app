@@ -24,7 +24,14 @@ export function AuthProvider({ children }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       if (mounted) {
-        setSession(currentSession)
+        // Supabase re-emits SIGNED_IN/TOKEN_REFRESHED on tab focus; ignore no-op updates
+        setSession((prev) =>
+          prev && currentSession &&
+          prev.user?.id === currentSession.user?.id &&
+          prev.access_token === currentSession.access_token
+            ? prev
+            : currentSession
+        )
         setLoading(false)
       }
     })
@@ -54,7 +61,7 @@ export function AuthProvider({ children }) {
     return { error }
   }
 
-  const user = session?.user ?? null
+  const user = useMemo(() => session?.user ?? null, [session?.user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const value = useMemo(
     () => ({
