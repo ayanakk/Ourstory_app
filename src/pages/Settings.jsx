@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Moon, Sun, Share2, LogOut, Pencil, Trash2, HeartCrack } from 'lucide-react'
+import { Moon, Sun, Share2, LogOut, Pencil, Trash2, HeartCrack, KeyRound } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -11,13 +11,17 @@ import { useTheme } from '../hooks/useTheme'
 import { getTodayYMD } from '../lib/milestones'
 import { toast } from '../components/ui/Toast'
 import InvitePartner from '../components/InvitePartner'
+import Modal from '../components/ui/Modal'
 
 export default function Settings() {
   const { signOut } = useAuth()
-  const { space, member, partner, updateSpace, updateDisplayName } = useSpace()
+  const { space, member, partner, updateSpace, updateDisplayName, issueDeletionPass } = useSpace()
   const { theme, toggleTheme } = useTheme()
   const [loggingOut, setLoggingOut] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [passOpen, setPassOpen] = useState(false)
+  const [passLoading, setPassLoading] = useState(false)
+  const [pass, setPass] = useState('')
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ spaceName: '', startDate: '', displayName: '' })
 
@@ -73,6 +77,23 @@ export default function Settings() {
     } catch {
       toast('Could not copy — please copy manually.')
     }
+  }
+
+  const handleShowPass = async () => {
+    setPassLoading(true)
+    const { data, error } = await issueDeletionPass()
+    setPassLoading(false)
+    if (error) {
+      toast('Could not create a pass')
+      return
+    }
+    setPass(data.code)
+    setPassOpen(true)
+  }
+
+  const closePass = () => {
+    setPassOpen(false)
+    setPass('')
   }
 
   const handleSignOut = async () => {
@@ -271,13 +292,29 @@ export default function Settings() {
                 Permanently erase your account and everything in your space.
               </p>
             </div>
-            <Link
-              to="/delete-account"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-line text-sm font-medium text-red-500 hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex-shrink-0"
-            >
-              <Trash2 size={14} /> Delete
-            </Link>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {partner && (
+                <button
+                  onClick={handleShowPass}
+                  disabled={passLoading}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-line text-sm font-medium text-ink hover:border-accent hover:text-accent transition-colors disabled:opacity-60"
+                >
+                  <KeyRound size={14} /> {passLoading ? '…' : 'Show pass'}
+                </button>
+              )}
+              <Link
+                to="/delete-account"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-line text-sm font-medium text-red-500 hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+              >
+                <Trash2 size={14} /> Delete
+              </Link>
+            </div>
           </div>
+          {partner && (
+            <p className="text-xs text-ink-muted">
+              To delete their account, {partner.display_name} needs your pass. Tap "Show pass" and give it to them only if you agree.
+            </p>
+          )}
         </Card>
 
         {/* Sign out */}
@@ -294,6 +331,21 @@ export default function Settings() {
           </Button>
         </div>
       </div>
+
+      <Modal
+        open={passOpen}
+        onClose={closePass}
+        title="Deletion pass"
+        footer={<Button variant="primary" size="sm" onClick={closePass}>Done</Button>}
+      >
+        <div className="space-y-4 text-center">
+          <p className="text-4xl tracking-[0.3em] text-ink font-semibold">{pass}</p>
+          <p className="text-xs text-ink-muted leading-relaxed">
+            Valid for 10 minutes. Only share this with {partner?.display_name || 'your partner'} if you agree to
+            them deleting their account.
+          </p>
+        </div>
+      </Modal>
     </AppShell>
   )
 }

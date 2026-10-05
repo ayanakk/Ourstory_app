@@ -164,8 +164,15 @@ export function SpaceProvider({ children }) {
     return { data, error }
   }, [])
 
-  const deleteAccount = useCallback(async (password) => {
-    const { data, error } = await supabase.functions.invoke('delete-account', { body: { password } })
+  // The partner shows this one-time pass; the person leaving types it in to delete.
+  const issueDeletionPass = useCallback(async () => {
+    const { data, error } = await supabase.rpc('issue_deletion_pass')
+    return { data, error }
+  }, [])
+
+  // opts (only when a partner is in the space): { pass, mode: 'transfer' | 'wipe' }
+  const deleteAccount = useCallback(async (password, opts = {}) => {
+    const { data, error } = await supabase.functions.invoke('delete-account', { body: { password, ...opts } })
     if (!error) return { data, error: null, code: null }
     // Non-2xx responses carry the error code in the response body
     let code = null
@@ -192,10 +199,11 @@ export function SpaceProvider({ children }) {
       updateSpace,
       updateDisplayName,
       checkDeleteAccount,
+      issueDeletionPass,
       deleteAccount,
       refresh: fetchSpaceData,
     }),
-    [space, member, partner, loading, createSpace, joinSpace, updateSpace, updateDisplayName, checkDeleteAccount, deleteAccount, fetchSpaceData]
+    [space, member, partner, loading, createSpace, joinSpace, updateSpace, updateDisplayName, checkDeleteAccount, issueDeletionPass, deleteAccount, fetchSpaceData]
   )
 
   return createElement(SpaceContext.Provider, { value }, children)

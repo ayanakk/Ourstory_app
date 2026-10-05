@@ -1,5 +1,8 @@
-// Permanently deletes the caller's account when they are the only member of their space.
-// Order: mark space 'deleting' -> storage files -> space row (cascades all data) -> auth user.
+// Permanently deletes the caller's account.
+// Alone in the space: mark space 'deleting' -> storage files -> space row (cascades all data) -> auth user.
+// Connected: needs the partner's one-time pass and a mode.
+//   transfer: memories are handed to the partner, then the auth user is deleted.
+//   wipe: storage files + all shared data are cleared (partner keeps an empty space), then the auth user.
 // A failure part-way leaves the account in place so the user can retry.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
@@ -40,6 +43,38 @@ async function listAllFiles(admin: ReturnType<typeof createClient>, prefix: stri
   return files
 }
 
+async function removeStorage(admin: ReturnType<typeof createClient>, spaceId: string) {
+  const files = await listAllFiles(admin, spaceId)
+  for (let i = 0; i < files.length; i += BATCH) {
+    const { error } = await admin.storage.from(BUCKET).remove(files.slice(i, i + BATCH))
+    if (error) throw error
+  }
+}
+
+/** Account deletion when a partner is in the space: needs their pass. */
+async function deleteConnected(admin: ReturnType<typeof createClient>, userId: string, pass: string, mode: string) {
+  if (mode !== 'transfer' && mode !== 'wipe') return reply(400, { error: 'INVALID_MODE' })
+
+  const { data: spaceId, error } = await admin.rpc('begin_connected_deletion', {
+    p_user: userId, p_code: pass, p_mode: mode,
+  })
+  if (error) {
+    if (error.message?.includes('INVALID_PASS')) return reply(403, { error: 'INVALID_PASS' })
+    if (error.message?.includes('NOT_CONNECTED')) return reply(409, { error: 'NOT_CONNECTED' })
+    throw error
+  }
+
+  if (mode === 'wipe') {
+    await removeStorage(admin, spaceId)
+    const { error: wipeErr } = await admin.rpc('finish_wipe', { p_user: userId })
+    if (wipeErr) throw wipeErr
+  }
+
+  const { error: delErr } = await admin.auth.admin.deleteUser(userId)
+  if (delErr) throw delErr
+  return reply(200, { ok: true })
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (req.method !== 'POST') return reply(405, { error: 'METHOD_NOT_ALLOWED' })
@@ -57,8 +92,13 @@ Deno.serve(async (req) => {
   if (userErr || !user?.email) return reply(401, { error: 'UNAUTHORIZED' })
 
   let password = ''
+  let pass = ''
+  let mode = ''
   try {
-    password = (await req.json()).password ?? ''
+    const body = await req.json()
+    password = body.password ?? ''
+    pass = String(body.pass ?? '')
+    mode = String(body.mode ?? '')
   } catch {
     // fall through: empty password fails verification below
   }
@@ -71,16 +111,12 @@ Deno.serve(async (req) => {
   try {
     const { data: spaceId, error: beginErr } = await admin.rpc('begin_account_deletion', { p_user: user.id })
     if (beginErr) {
-      if (beginErr.message?.includes('SPACE_CONNECTED')) return reply(409, { error: 'SPACE_CONNECTED' })
-      throw beginErr
+      if (!beginErr.message?.includes('SPACE_CONNECTED')) throw beginErr
+      return await deleteConnected(admin, user.id, pass, mode)
     }
 
     if (spaceId) {
-      const files = await listAllFiles(admin, spaceId)
-      for (let i = 0; i < files.length; i += BATCH) {
-        const { error } = await admin.storage.from(BUCKET).remove(files.slice(i, i + BATCH))
-        if (error) throw error
-      }
+      await removeStorage(admin, spaceId)
 
       const { error: spaceErr } = await admin.from('spaces').delete().eq('id', spaceId)
       if (spaceErr) throw spaceErr
