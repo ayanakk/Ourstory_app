@@ -418,8 +418,28 @@ values ('photos', 'photos', false)
 on conflict (id) do nothing;
 
 -- File path convention: {space_id}/{memory_id}/{filename}
+-- Capsule files live at {space_id}/capsules/{capsule_id}/{file} and stay sealed until opens_at
+create or replace function can_read_capsule_file(p_name text)
+returns boolean
+language sql security definer stable
+set search_path = public as $$
+  select exists (
+    select 1 from capsules c
+    where c.id::text = (storage.foldername(p_name))[3]
+      and c.space_id::text = (storage.foldername(p_name))[1]
+      and is_member(c.space_id)
+      and (
+        c.author_id = auth.uid()   -- authors may always read what they sealed (needed to delete files)
+        or (c.opens_at <= now() and (c.to_user is null or c.to_user = auth.uid()))
+      )
+  );
+$$;
 create policy "members read photos" on storage.objects for select
-  using (bucket_id = 'photos' and is_member(((storage.foldername(name))[1])::uuid));
+  using (
+    bucket_id = 'photos'
+    and is_member(((storage.foldername(name))[1])::uuid)
+    and ((storage.foldername(name))[2] is distinct from 'capsules' or can_read_capsule_file(name))
+  );
 create policy "members upload photos" on storage.objects for insert
   with check (bucket_id = 'photos' and is_member(((storage.foldername(name))[1])::uuid));
 create policy "members delete photos" on storage.objects for delete

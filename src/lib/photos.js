@@ -124,3 +124,17 @@ export async function uploadPhoto(spaceId, memoryId, file) {
   if (error) return { path: null, error }
   return { path: filename, error: null }
 }
+
+/** Uploads a capsule photo or video to {spaceId}/capsules/{capsuleId}/{uuid}.ext; images are compressed first. */
+export async function uploadCapsuleFile(spaceId, capsuleId, file) {
+  const isImage = file.type?.startsWith('image/')
+  const body = isImage ? await compressImage(file) : file
+  const ext = isImage ? 'jpg' : (file.name?.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp4'
+  const filename = `${spaceId}/capsules/${capsuleId}/${crypto.randomUUID()}.${ext}`
+  const { error } = await supabase.storage.from('photos').upload(filename, body, {
+    contentType: body.type || file.type || 'application/octet-stream',
+    upsert: false,
+  })
+  if (error) return { path: null, error }
+  return { path: filename, error: null }
+}
