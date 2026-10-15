@@ -14,9 +14,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useSpace } from '../hooks/useSpace'
 import { parseYMD } from '../lib/milestones'
 import { uploaderLabel } from '../lib/people'
-import { MOODS } from '../components/memory/CreateMemoryWizard'
+import { getMood } from '../lib/moods'
 
-const MOOD_MAP = Object.fromEntries(MOODS.map((m) => [m.id, m]))
 
 function formatLongDate(dateStr) {
   const p = parseYMD(dateStr)
@@ -122,7 +121,7 @@ export default function MemoryDetail() {
   const otherPhotos = (memory.photos || []).filter((p) => p.path !== cover)
   const rawAllPhotos = coverPhoto ? [coverPhoto, ...otherPhotos] : otherPhotos
   const allPhotos = rawAllPhotos.map((p) => ({ ...p, uploaderName: uploaderLabel(p.uploaded_by, member, partner) }))
-  const mood = memory.mood ? MOOD_MAP[memory.mood] : null
+  const mood = getMood(memory.mood)
   const isAuthor = user?.id === memory.author_id
 
   return (

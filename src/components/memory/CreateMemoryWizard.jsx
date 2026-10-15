@@ -5,6 +5,7 @@ import Modal from '../ui/Modal'
 import { Input, Textarea } from '../ui/Input'
 import Button from '../ui/Button'
 import PlaceSearch from './PlaceSearch'
+import MoodPicker from './MoodPicker'
 import { toast } from '../ui/Toast'
 import { useMemories } from '../../hooks/useMemories'
 import { useSpace } from '../../hooks/useSpace'
@@ -15,15 +16,6 @@ import { compressImage, uploadPhoto } from '../../lib/photos'
 
 const MAX_PHOTOS = 20
 const MAX_PHOTO_MB = 15
-
-export const MOODS = [
-  { id: 'romantic', emoji: '✨', label: 'Romantic' },
-  { id: 'celebratory', emoji: '🥂', label: 'Celebration' },
-  { id: 'peaceful', emoji: '🌿', label: 'Peaceful' },
-  { id: 'adventurous', emoji: '🚀', label: 'Adventure' },
-  { id: 'happy', emoji: '☀️', label: 'Joyful' },
-  { id: 'grateful', emoji: '🤍', label: 'Grateful' },
-]
 
 export default function CreateMemoryWizard({ open, onClose, initialDate, initialTitle, initialPlace, onSuccess }) {
   const { createMemory } = useMemories()
@@ -338,23 +330,7 @@ export default function CreateMemoryWizard({ open, onClose, initialDate, initial
                 <label className="text-xs font-semibold uppercase tracking-widest text-ink-muted block mb-2">
                   Mood
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {MOODS.map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => setMood(m.id)}
-                      className={`flex items-center gap-2 p-2.5 rounded-[var(--r-xs)] border text-xs font-medium transition-all ${
-                        mood === m.id
-                          ? 'border-accent bg-accent-soft text-ink font-semibold'
-                          : 'border-line bg-surface hover:bg-surface-2 text-ink-muted'
-                      }`}
-                    >
-                      <span className="text-base">{m.emoji}</span>
-                      <span>{m.label}</span>
-                    </button>
-                  ))}
-                </div>
+                <MoodPicker value={mood} onChange={setMood} />
               </div>
 
               {/* Photos */}

@@ -8,6 +8,7 @@ import {
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import EmptyState from '../ui/EmptyState'
+import { getMood } from '../../lib/moods'
 import SignedImage from '../story/SignedImage'
 import PhotoViewer from '../memory/PhotoViewer'
 import { categoryIcon, CATEGORIES } from './AddBucketItemModal'
@@ -32,16 +33,7 @@ function MemoryThumb({ memory }) {
     return () => { active = false }
   }, [photoPath])
 
-  const moodEmojis = {
-    romantic: '✨',
-    celebratory: '🥂',
-    peaceful: '🌿',
-    adventurous: '🚀',
-    happy: '☀️',
-    grateful: '🤍',
-  }
-
-  const emoji = memory.mood ? (moodEmojis[memory.mood] || '✨') : '📷'
+  const emoji = memory.mood ? (getMood(memory.mood)?.emoji || '✨') : '📷'
 
   return (
     <div className="relative w-14 h-14 rounded-[var(--r-xs)] overflow-hidden bg-surface-2 border border-line flex-shrink-0 flex items-center justify-center">
