@@ -3,7 +3,7 @@ import { Search as SearchIcon, X, Heart } from 'lucide-react'
 import AppShell from '../components/layout/AppShell'
 import EmptyState from '../components/ui/EmptyState'
 import MemoryCard from '../components/memory/MemoryCard'
-import { MOODS } from '../components/memory/CreateMemoryWizard'
+import { MOODS, getMood } from '../lib/moods'
 import { useMemories } from '../hooks/useMemories'
 
 function ResultSkeleton() {
@@ -34,6 +34,12 @@ export default function Search() {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [favoritesOnly, setFavoritesOnly] = useState(false)
+
+  const moodOptions = useMemo(() => {
+    const known = new Set(MOODS.map((m) => m.id))
+    const extra = [...new Set(memories.map((m) => m.mood).filter((v) => v && !known.has(v)))]
+    return [...MOODS, ...extra.map(getMood)]
+  }, [memories])
 
   const hasFilters = moods.length > 0 || from || to || favoritesOnly
   const hasCriteria = query.trim() || hasFilters
@@ -111,7 +117,7 @@ export default function Search() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {MOODS.map((m) => (
+          {moodOptions.map((m) => (
             <button
               key={m.id}
               type="button"
