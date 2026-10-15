@@ -6,7 +6,7 @@ import Button from '../ui/Button'
 import { toast } from '../ui/Toast'
 import SignedImage from '../story/SignedImage'
 import PlaceSearch from './PlaceSearch'
-import { MOODS } from './CreateMemoryWizard'
+import MoodPicker from './MoodPicker'
 import { supabase } from '../../lib/supabase'
 import { compressImage, uploadPhoto, deletePhotoFiles } from '../../lib/photos'
 import { useSpace } from '../../hooks/useSpace'
@@ -196,23 +196,7 @@ export default function EditMemoryModal({ open, memory, onClose, onSave, onPhoto
         />
         <div>
           <label className="text-xs font-semibold uppercase tracking-widest text-ink-muted block mb-2">Mood</label>
-          <div className="grid grid-cols-3 gap-2">
-            {MOODS.map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => setForm((f) => ({ ...f, mood: f.mood === m.id ? '' : m.id }))}
-                className={`flex items-center gap-2 p-2.5 rounded-[var(--r-xs)] border text-xs font-medium transition-all ${
-                  form.mood === m.id
-                    ? 'border-accent bg-accent-soft text-ink font-semibold'
-                    : 'border-line bg-surface hover:bg-surface-2 text-ink-muted'
-                }`}
-              >
-                <span className="text-base">{m.emoji}</span>
-                <span>{m.label}</span>
-              </button>
-            ))}
-          </div>
+          <MoodPicker value={form.mood} onChange={(mood) => setForm((f) => ({ ...f, mood }))} />
         </div>
         <Textarea id="edit-memory-body" label="The story (optional)" rows={5} value={form.body} onChange={set('body')} />
         <Input id="edit-memory-caption" label="Caption (optional)" value={form.caption} onChange={set('caption')} />

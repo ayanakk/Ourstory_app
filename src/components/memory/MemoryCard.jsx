@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom'
 import { MapPin } from 'lucide-react'
 import SignedImage from '../story/SignedImage'
 import { parseYMD } from '../../lib/milestones'
-import { MOODS } from './CreateMemoryWizard'
+import { getMood } from '../../lib/moods'
 
 const LAYOUTS = ['hero', 'split', 'collage', 'quote']
-const MOOD_MAP = Object.fromEntries(MOODS.map((m) => [m.id, m]))
 
 export function layoutForMemory(memory, index) {
   if (memory.layout && LAYOUTS.includes(memory.layout)) return memory.layout
@@ -25,7 +24,7 @@ function coverPath(memory) {
 }
 
 function Meta({ memory, dark = false }) {
-  const mood = memory.mood ? MOOD_MAP[memory.mood] : null
+  const mood = getMood(memory.mood)
   const tone = dark ? 'text-white/85' : 'text-ink-muted'
   return (
     <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium ${tone}`}>
