@@ -25,7 +25,7 @@ export function ToastProvider() {
   return createPortal(
     <div
       aria-live="polite"
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none"
+      className="fixed bottom-[calc(88px+env(safe-area-inset-bottom))] lg:bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none"
     >
       <AnimatePresence>
         {toasts.map(t => (

@@ -113,7 +113,7 @@ export default function CreateCapsuleModal({ open, onClose, onCreate }) {
       }
       bodyClassName="space-y-5"
     >
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2">
         <button type="button" className={chip(kind === 'capsule')} onClick={() => setKind('capsule')}>
           💌 Time capsule (both)
         </button>
@@ -123,7 +123,7 @@ export default function CreateCapsuleModal({ open, onClose, onCreate }) {
       </div>
 
       {kind === 'letter' && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2">
           <button type="button" className={chip(toUser === user?.id)} onClick={() => setToUser(user.id)}>
             To future me
           </button>

@@ -33,7 +33,7 @@ function ThenVsNow({ thenMemory, todayStr, todayMemory, onAddPhoto, onWriteToday
       >
         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
         <motion.div
-          className="relative w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-4xl sm:rounded-[var(--r-md)] overflow-hidden border border-line flex flex-col"
+          className="relative w-full h-full sm:h-auto sm:max-h-[90dvh] sm:max-w-4xl sm:rounded-[var(--r-md)] overflow-hidden border border-line flex flex-col"
           style={{ background: 'var(--bg)' }}
           initial={{ opacity: 0, y: 16, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}

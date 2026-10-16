@@ -32,7 +32,7 @@ export default function MoodPicker({ value, onChange }) {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
         {MOODS.map((m) => (
           <button key={m.id} type="button" onClick={() => pick(m.id)} className={chip(value === m.id)}>
             <span className="text-base">{m.emoji}</span>

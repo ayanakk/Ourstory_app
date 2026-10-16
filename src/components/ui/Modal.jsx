@@ -34,7 +34,7 @@ export default function Modal({ open, onClose, title, children, footer, bodyClas
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-3"
+          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -50,15 +50,15 @@ export default function Modal({ open, onClose, title, children, footer, bodyClas
 
           {/* Panel */}
           <motion.div
-            className={`relative w-full ${maxWidthClass} rounded-[var(--r-md)] border border-line z-10 flex flex-col overflow-hidden`}
-            style={{ background: 'var(--surface)', boxShadow: 'var(--shadow)', maxHeight: 'calc(100dvh - 24px)' }}
+            className={`relative w-full ${maxWidthClass} rounded-t-[var(--r-md)] sm:rounded-[var(--r-md)] border border-line z-10 flex flex-col overflow-hidden`}
+            style={{ background: 'var(--surface)', boxShadow: 'var(--shadow)', maxHeight: 'calc(100dvh - 12px)' }}
             initial={{ opacity: 0, scale: 0.95, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 8 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* Header */}
-            <div className="relative flex-none px-8 pt-8 pb-4">
+            <div className="relative flex-none px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
               <button
                 onClick={onClose}
                 aria-label="Close"
@@ -80,7 +80,7 @@ export default function Modal({ open, onClose, title, children, footer, bodyClas
 
             {/* Body */}
             <div
-              className={`flex-1 min-h-0 overflow-y-auto overscroll-contain px-8 pb-4 ${bodyClassName}`}
+              className={`flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 sm:px-8 pb-4 ${bodyClassName}`}
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
               {children}
@@ -89,7 +89,7 @@ export default function Modal({ open, onClose, title, children, footer, bodyClas
             {/* Footer */}
             {footer && (
               <div
-                className="flex-none px-8 pt-4 border-t border-line"
+                className="flex-none px-5 sm:px-8 pt-4 border-t border-line"
                 style={{ position: 'static', background: 'var(--surface)', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
               >
                 {footer}

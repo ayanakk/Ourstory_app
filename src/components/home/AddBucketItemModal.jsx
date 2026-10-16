@@ -116,7 +116,7 @@ export default function AddBucketItemModal({ open, date, item, onClose, onAdd })
           <label className="text-xs font-semibold uppercase tracking-widest text-ink-muted block mb-2">
             Category
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 min-[400px]:grid-cols-3 gap-2">
             {CATEGORIES.map(({ id, label, Icon }) => (
               <button
                 key={id}
@@ -139,7 +139,7 @@ export default function AddBucketItemModal({ open, date, item, onClose, onAdd })
           <label className="text-xs font-semibold uppercase tracking-widest text-ink-muted block mb-2">
             Priority
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 min-[400px]:grid-cols-3 gap-2">
             {PRIORITIES.map((p) => (
               <button
                 key={p.value}

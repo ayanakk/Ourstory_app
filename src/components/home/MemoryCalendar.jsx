@@ -224,7 +224,7 @@ export default function MemoryCalendar({
   }
 
   return (
-    <Card glass className="p-5 lg:p-7 select-none overflow-hidden">
+    <Card glass className="p-3 sm:p-5 lg:p-7 select-none overflow-hidden">
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-3 mb-6">
         <div>
@@ -359,7 +359,7 @@ export default function MemoryCalendar({
                   onClick={() => onSelectDate?.(dateStr)}
                   className={[
                     'relative flex flex-col items-center justify-between p-1.5 rounded-[var(--r-sm)]',
-                    'min-h-[44px] min-w-[44px] w-full transition-all text-xs font-sans',
+                    'min-h-[44px] min-w-0 w-full transition-all text-xs font-sans',
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent',
                     isSelected
                       ? 'border border-accent shadow-sm'

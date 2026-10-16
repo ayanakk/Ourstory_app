@@ -29,7 +29,7 @@ export default function Story() {
       <div className="space-y-3 mb-10">
         <p className="text-xs font-semibold uppercase tracking-widest text-accent">Our Story</p>
         <h1
-          className="text-4xl lg:text-5xl text-ink leading-tight"
+          className="text-3xl sm:text-4xl lg:text-5xl text-ink leading-tight"
           style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
         >
           Our Story
@@ -59,7 +59,7 @@ export default function Story() {
           {grouped.map((yearGroup) => (
             <div key={yearGroup.year} className="mb-14 last:mb-0">
               <div
-                className="sticky top-2 z-10 mb-8 inline-block px-3 py-1 rounded-full backdrop-blur-md"
+                className="sticky top-16 lg:top-2 z-10 mb-8 inline-block px-3 py-1 rounded-full backdrop-blur-md"
                 style={{ background: 'var(--glass)' }}
               >
                 <h2
@@ -73,7 +73,7 @@ export default function Story() {
               {yearGroup.months.map((monthGroup) => (
                 <div key={monthGroup.month} className="mb-10 last:mb-0">
                   <p
-                    className="sticky top-14 z-[5] mb-5 inline-block px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-widest text-ink-muted backdrop-blur-md"
+                    className="sticky top-[108px] lg:top-14 z-[5] mb-5 inline-block px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-widest text-ink-muted backdrop-blur-md"
                     style={{ background: 'var(--glass)' }}
                   >
                     {monthGroup.monthLabel}

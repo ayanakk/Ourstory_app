@@ -23,7 +23,7 @@ export const Input = forwardRef(function Input(
         ref={ref}
         id={id}
         className={[
-          'w-full px-4 py-3 rounded-[var(--r-sm)] border text-ink text-sm font-sans',
+          'w-full px-4 py-3 rounded-[var(--r-sm)] border text-ink text-base sm:text-sm font-sans',
           'bg-surface-2 border-line placeholder:text-ink-muted',
           'transition-all focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20',
           error ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : '',
@@ -60,7 +60,7 @@ export const Textarea = forwardRef(function Textarea(
         ref={ref}
         id={id}
         className={[
-          'w-full px-4 py-3 rounded-[var(--r-sm)] border text-ink text-sm font-sans',
+          'w-full px-4 py-3 rounded-[var(--r-sm)] border text-ink text-base sm:text-sm font-sans',
           'bg-surface-2 border-line placeholder:text-ink-muted resize-none',
           'transition-all focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20',
           error ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20' : '',
