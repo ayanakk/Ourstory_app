@@ -24,7 +24,7 @@ export default function Numbers() {
       <div className="space-y-3 mb-10">
         <p className="text-xs font-semibold uppercase tracking-widest text-accent">Numbers</p>
         <h1
-          className="text-4xl lg:text-5xl text-ink leading-tight"
+          className="text-3xl sm:text-4xl lg:text-5xl text-ink leading-tight"
           style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
         >
           Numbers

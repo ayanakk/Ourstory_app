@@ -24,7 +24,7 @@ const chipClass = (active) =>
   }`
 
 const dateInputClass =
-  'px-3 py-2 rounded-[var(--r-sm)] border border-line bg-surface-2 text-ink text-sm font-sans ' +
+  'px-3 py-2 rounded-[var(--r-sm)] border border-line bg-surface-2 text-ink text-base sm:text-sm font-sans ' +
   'focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20'
 
 export default function Search() {
@@ -80,7 +80,7 @@ export default function Search() {
       <div className="space-y-3 mb-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-accent">Search</p>
         <h1
-          className="text-4xl lg:text-5xl text-ink leading-tight"
+          className="text-3xl sm:text-4xl lg:text-5xl text-ink leading-tight"
           style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}
         >
           Search
@@ -97,12 +97,12 @@ export default function Search() {
           />
           <input
             type="search"
-            autoFocus
+            autoFocus={typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search titles, stories, places, captions…"
             aria-label="Search memories"
-            className="w-full pl-11 pr-11 py-3 rounded-[var(--r-sm)] border border-line bg-surface-2 text-ink text-sm font-sans placeholder:text-ink-muted transition-all focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+            className="w-full pl-11 pr-11 py-3 rounded-[var(--r-sm)] border border-line bg-surface-2 text-ink text-base sm:text-sm font-sans placeholder:text-ink-muted transition-all focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
           />
           {query && (
             <button
@@ -116,7 +116,7 @@ export default function Search() {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2 overflow-x-auto sm:flex-wrap -mx-4 px-4 sm:mx-0 sm:px-0 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>button]:shrink-0">
           {moodOptions.map((m) => (
             <button
               key={m.id}

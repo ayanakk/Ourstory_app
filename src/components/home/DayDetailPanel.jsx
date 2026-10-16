@@ -544,7 +544,7 @@ export default function DayDetailPanel({
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-t-[var(--r-lg)] border-t border-line backdrop-blur-2xl p-6 shadow-2xl z-10"
+              className="relative w-full max-w-lg max-h-[85dvh] overflow-y-auto rounded-t-[var(--r-lg)] border-t border-line backdrop-blur-2xl p-6 shadow-2xl z-10"
               style={{ background: 'var(--glass)' }}
             >
               {/* Drag handle */}

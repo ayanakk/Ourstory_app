@@ -125,7 +125,7 @@ export default function Settings() {
           >
             Appearance
           </h2>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-ink">Theme</p>
               <p className="text-xs text-ink-muted mt-0.5">
@@ -196,7 +196,7 @@ export default function Settings() {
               </div>
             </form>
           ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-0.5">
               <p className="text-[10px] uppercase tracking-widest text-ink-muted font-semibold">Space name</p>
               <p className="text-sm font-medium text-ink">{space?.name || '—'}</p>

@@ -394,7 +394,7 @@ export default function CreateMemoryWizard({ open, onClose, initialDate, initial
                           type="button"
                           onClick={() => removeFile(p.id)}
                           aria-label="Remove photo"
-                          className="absolute top-1 right-1 p-0.5 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-1 right-1 p-0.5 rounded-full bg-black/50 text-white sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                         >
                           <X size={12} />
                         </button>

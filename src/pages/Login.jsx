@@ -81,7 +81,7 @@ export default function Login() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-[440px] rounded-[var(--r-md)] border border-line p-10"
+        className="w-full max-w-[440px] rounded-[var(--r-md)] border border-line p-6 sm:p-10"
         style={{ background: 'var(--glass)', backdropFilter: 'blur(20px)', boxShadow: 'var(--shadow)' }}
       >
         {/* Heading */}

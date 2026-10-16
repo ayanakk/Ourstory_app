@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import {
   Home, BookOpen, Clock, MapPin, Image, Package,
-  ListChecks, BarChart2, Search, Settings, Plus
+  ListChecks, BarChart2, Search, Settings, Plus, Menu, X
 } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useSpace } from '../../hooks/useSpace'
 import CreateMemoryWizard from '../memory/CreateMemoryWizard'
 import Button from '../ui/Button'
@@ -27,8 +28,10 @@ const BOTTOM_NAV = [
   { to: '/story',      label: 'Story',   Icon: BookOpen },
   null, // center create button
   { to: '/photo-wall', label: 'Wall',    Icon: Image },
-  { to: '/settings',   label: 'Settings',Icon: Settings },
+  'more',
 ]
+
+const MORE_ITEMS = NAV_ITEMS.filter(i => !['/', '/story', '/photo-wall'].includes(i.to))
 
 /* ── Sidebar NavItem ────────────────────────────────────────── */
 function SideNavItem({ to, label, Icon }) {
@@ -99,8 +102,11 @@ function BottomNavItem({ to, label, Icon }) {
 export default function AppShell({ children }) {
   const { member, partner } = useSpace()
   const [createOpen, setCreateOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => { setMoreOpen(false) }, [location.pathname])
 
   const partnerLine = (() => {
     if (member && partner) return `${member.display_name} & ${partner.display_name}`
@@ -175,17 +181,9 @@ export default function AppShell({ children }) {
 
       {/* ── Main Content ─────────────────────────────────────── */}
       <main
-        className="flex-1 flex flex-col min-w-0"
-        style={{ paddingLeft: 'var(--sidebar-w)' }}
+        className="flex-1 flex flex-col min-w-0 pt-14 pb-[calc(80px+env(safe-area-inset-bottom))] lg:pt-0 lg:pb-0 lg:pl-[var(--sidebar-w)]"
       >
-        {/* Offset for desktop sidebar */}
-        <style>{`
-          @media (max-width: 1023px) {
-            main { padding-left: 0 !important; padding-top: 56px; padding-bottom: 72px; }
-          }
-        `}</style>
-
-        <div className="flex-1 w-full min-w-0 overflow-x-hidden max-w-[1100px] mx-auto px-6 lg:px-10 py-8 lg:py-10">
+        <div className="flex-1 w-full min-w-0 overflow-x-hidden max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-10 py-6 lg:py-10">
           <PageTransition key={location.pathname}>
             {children}
           </PageTransition>
@@ -198,7 +196,7 @@ export default function AppShell({ children }) {
         style={{
           background: 'var(--glass)',
           paddingBottom: 'env(safe-area-inset-bottom)',
-          height: '64px',
+          height: 'calc(64px + env(safe-area-inset-bottom))',
         }}
       >
         {BOTTOM_NAV.map((item, i) => {
@@ -223,9 +221,81 @@ export default function AppShell({ children }) {
               </div>
             )
           }
+          if (item === 'more') {
+            return (
+              <button
+                key="more"
+                onClick={() => setMoreOpen(o => !o)}
+                aria-label="More"
+                aria-expanded={moreOpen}
+                className={`flex flex-col items-center justify-center gap-0.5 min-w-[48px] py-1 flex-1 transition-colors ${moreOpen ? 'text-accent' : 'text-ink-muted'}`}
+              >
+                <Menu size={22} strokeWidth={1.8} />
+                <span className="text-[10px] font-medium">More</span>
+              </button>
+            )
+          }
           return <BottomNavItem key={item.to} {...item} />
         })}
       </nav>
+
+      {/* ── Mobile "More" sheet ──────────────────────────────── */}
+      <AnimatePresence>
+        {moreOpen && (
+          <motion.div
+            className="lg:hidden fixed inset-0 z-[25]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div
+              className="absolute inset-0"
+              style={{ background: 'rgba(0,0,0,0.45)' }}
+              onClick={() => setMoreOpen(false)}
+              aria-hidden="true"
+            />
+            <motion.div
+              className="absolute left-0 right-0 bottom-0 rounded-t-[var(--r-md)] border-t border-line px-4 pt-4"
+              style={{
+                background: 'var(--surface)',
+                paddingBottom: 'calc(76px + env(safe-area-inset-bottom))',
+              }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="flex items-center justify-between px-1 pb-3">
+                <span className="text-xs font-semibold uppercase tracking-widest text-ink-muted">More</span>
+                <button
+                  onClick={() => setMoreOpen(false)}
+                  aria-label="Close"
+                  className="p-1.5 rounded-full text-ink-muted hover:bg-surface-2"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {MORE_ITEMS.map(({ to, label, Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    className={({ isActive }) =>
+                      `flex flex-col items-center justify-center gap-1.5 py-4 rounded-[var(--r-sm)] text-xs font-medium text-center ${
+                        isActive ? 'bg-accent-soft text-accent' : 'bg-surface-2 text-ink'
+                      }`
+                    }
+                  >
+                    <Icon size={22} strokeWidth={1.8} />
+                    <span>{label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Create Memory Wizard ──────────────────────────── */}
       <CreateMemoryWizard
